@@ -496,16 +496,23 @@ const DAILY_GOAL=50;
 
 /* ---- cloud sync (Firebase Realtime DB) ---- */
 function loadFirebaseScripts(cb){
-  if(window.firebase){cb();return;}
+  if(window.firebase&&window.firebase.database){cb();return;}
+  let done=false;
+  function finish(err){if(done)return;done=true;cb(err);}
+  // inject both scripts
   const s1=document.createElement("script");s1.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js";
-  s1.onload=function(){const s2=document.createElement("script");s2.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js";s2.onload=cb;s2.onerror=()=>cb(true);document.head.appendChild(s2);};
-  s1.onerror=()=>cb(true);document.head.appendChild(s1);
+  s1.onload=function(){const s2=document.createElement("script");s2.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js";s2.onload=function(){finish();};s2.onerror=function(){/* rely on poll */};document.head.appendChild(s2);};
+  s1.onerror=function(){/* rely on poll */};
+  document.head.appendChild(s1);
+  // poll for actual availability (survives extension interference with onload/onerror)
+  let tries=0;const iv=setInterval(function(){tries++;if(window.firebase&&window.firebase.database){clearInterval(iv);finish();}else if(tries>=40){clearInterval(iv);finish(true);}},150);
 }
 function initCloud(cb){
   if(!CLOUD_ENABLED){cb&&cb();return;}
+  setCloudPill(false,"\u2026");
   loadFirebaseScripts(function(err){
-    if(err){setCloudPill(false,"offline");cb&&cb();return;}
-    try{const app=firebase.initializeApp(FIREBASE_CONFIG);fbDB=firebase.database();cloudReady=true;setCloudPill(true);}catch(e){setCloudPill(false,"offline");}
+    if(err||!window.firebase){setCloudPill(false,"offline");cb&&cb();return;}
+    try{firebase.initializeApp(FIREBASE_CONFIG);fbDB=firebase.database();cloudReady=true;setCloudPill(true);}catch(e){setCloudPill(false,"offline");}
     cb&&cb();
   });
 }
@@ -827,6 +834,7 @@ const APP_ICON="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7Gk
   const ati=document.createElement("link");ati.rel="apple-touch-icon";ati.href=APP_ICON;document.head.appendChild(ati);
   const tc=document.createElement("meta");tc.name="theme-color";tc.content="#134e4a";document.head.appendChild(tc);
   const mc=document.createElement("meta");mc.name="apple-mobile-web-app-capable";mc.content="yes";document.head.appendChild(mc);
+  const mc2=document.createElement("meta");mc2.name="mobile-web-app-capable";mc2.content="yes";document.head.appendChild(mc2);
   // manifest (data-URI)
   const manifest={
     name:"Quant — SSC Mental Math",short_name:"Quant",
