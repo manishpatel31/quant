@@ -498,9 +498,13 @@ let fbDB=null, cloudReady=false;
 
 /* ---- local + persistent store ---- */
 const LS_KEY="quant_v3";
-function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null};}
+const APP_EPOCH=1735689600000; // 2025-01-01, floor for clock-sanity checks
+function nowTs(){const t=Date.now();return (t<APP_EPOCH||t>APP_EPOCH+50*365*24*3600*1000)?APP_EPOCH:t;}
+function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0};}
 function loadStore(){try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s)return Object.assign(blankStore(),s);}catch(e){}return blankStore();}
-function saveStore(){try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}if(cloudReady&&store.user)pushCloud();}
+function saveStore(){store.updatedAt=nowTs();try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}if(cloudReady&&store.user&&!suppressPush)pushCloud();}
+let suppressPush=false;
+function saveLocalOnly(){const p=suppressPush;suppressPush=true;saveStore();suppressPush=p;}
 let store=loadStore();
 const DAILY_GOAL=50;
 
@@ -527,13 +531,35 @@ function initCloud(cb){
   });
 }
 function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
-function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
+function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs()};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
+function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;}
+/* pullCloud: used at LOGIN — identity wins, cloud copy is authoritative for that code. */
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
   const k=userKey();if(!k){cb&&cb(false);return;}
   fbDB.ref("users/"+k).get().then(function(snap){
-    if(snap.exists()){const d=snap.val();store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};saveStore();cb&&cb(true,true);}
-    else{pushCloud();cb&&cb(true,false);}
+    if(snap.exists()){applyCloudData(snap.val());saveLocalOnly();cb&&cb(true,true);}
+    else{cb&&cb(true,false);}
+  }).catch(function(){cb&&cb(false);});
+}
+/* syncMerge: used on page load for an ALREADY-logged-in user (same code).
+   Compares timestamps: whichever copy is newer wins, so a device that
+   played offline keeps its newer data instead of being overwritten. */
+function syncMerge(cb){
+  if(!cloudReady||!store.user){cb&&cb(false);return;}
+  const k=userKey();if(!k){cb&&cb(false);return;}
+  const localTs=store.updatedAt||0;
+  fbDB.ref("users/"+k).get().then(function(snap){
+    if(snap.exists()){
+      const d=snap.val();const cloudTs=d.updatedAt||0;
+      if(cloudTs>localTs){applyCloudData(d);saveLocalOnly();cb&&cb(true,"cloud-newer");}
+      else if(localTs>cloudTs){pushCloud();cb&&cb(true,"local-newer");}
+      else{cb&&cb(true,"equal");}
+    }else{
+      // no cloud record yet for this code — push local up if we have anything
+      if((store.history&&store.history.length)||Object.keys(store.mastery||{}).length)pushCloud();
+      cb&&cb(true,"created");
+    }
   }).catch(function(){cb&&cb(false);});
 }
 function setCloudPill(on,txt){const p=document.getElementById("cloudPill");if(!p)return;p.className="cloudpill "+(on?"on":"off");p.textContent=txt||(on?"cloud":"local");}
@@ -876,13 +902,34 @@ function lookupName(code,cb){
 }
 function commitLogin(code,name){
   const wasCode=store.user&&store.user.code;
+  const switching=wasCode&&wasCode!==code;
   store.user={name:name,code:code};
-  // if switching to a different code, clear local data so we load fresh from cloud
-  if(wasCode&&wasCode!==code){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
-  saveStore();updateWho();
   const ss=document.getElementById("syncStatus");
-  if(cloudReady){ss.textContent="Syncing\u2026";pullCloud(function(ok,existed){ss.textContent=ok?(existed?"Loaded your saved data.":"New profile created."):"Couldn't reach cloud — saved locally.";setTimeout(closeLogin,800);goHome();});}
-  else{closeLogin();goHome();}
+  if(cloudReady){
+    ss.textContent="Loading\u2026";
+    // PULL FIRST — do not clear or push anything until we know what's in the cloud.
+    pullCloud(function(ok,existed){
+      if(ok&&existed){
+        // cloud had data — pullCloud already loaded it into store. Safe to push (writes same data back with name).
+        ss.textContent="Loaded your saved data.";
+        saveStore();
+      }else if(ok&&!existed){
+        // brand-new code with no cloud record. If we were switching accounts, start clean.
+        if(switching){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
+        ss.textContent="New profile created.";
+        saveStore(); // now safe to create the record
+      }else{
+        // cloud unreachable — DON'T wipe, DON'T push. Keep whatever is local, save locally only.
+        ss.textContent="Couldn't reach cloud — using this device only.";
+        saveLocalOnly();
+      }
+      updateWho();setTimeout(closeLogin,800);goHome();
+    });
+  }else{
+    // no cloud: local-only. If switching accounts on this device, start clean.
+    if(switching){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
+    saveLocalOnly();updateWho();closeLogin();goHome();
+  }
 }
 function closeLogin(){document.getElementById("loginModal").classList.add("hidden");}
 function updateWho(){document.getElementById("whoLabel").textContent=store.user?store.user.name:"";}
@@ -906,7 +953,7 @@ document.getElementById("adaptive").checked=cfg.adaptive;document.getElementById
 goHome();
 if(!store.user)setTimeout(openLogin,300);
 initCloud(function(){
-  if(store.user&&cloudReady){pullCloud(function(){goHome();});}
+  if(store.user&&cloudReady){syncMerge(function(){goHome();});}
 });
 
 
