@@ -670,6 +670,151 @@ function genCirclePerim(L){const r=rnd(scale(L,2,5),scale(L,7,21));return{q:"Cir
 function genCubeVol(L){const s=rnd(scale(L,2,5),scale(L,6,15));return{q:"Volume of cube, side "+s,a:s*s*s,trick:"Volume = side³.",steps:[s+"³ = "+(s*s*s)]};}
 function genCuboidVol(L){const l=rnd(scale(L,2,5),scale(L,6,12)),w=rnd(scale(L,2,5),scale(L,6,12)),h=rnd(scale(L,2,5),scale(L,6,12));return{q:"Volume of cuboid "+l+"×"+w+"×"+h,a:l*w*h,trick:"Volume = l × b × h.",steps:[l+" × "+w+" = "+(l*w),"× "+h+" = "+(l*w*h)]};}
 
+/* ---- Successive percentage change (used for CI-style 2/3-year problems) ---- */
+function genSuccPct2(L){
+  const pool=[5,10,15,20,25,-5,-10,-15,-20,-25];
+  const a=pick(pool.slice(0,scale(L,4,pool.length)));
+  const b=pick(pool.slice(0,scale(L,4,pool.length)));
+  const net=round2(a+b+(a*b)/100);
+  return {q:"Successive change of "+(a>0?"+":"")+a+"% and "+(b>0?"+":"")+b+"% = single change of ?%",
+    a:net, trick:"Net% = a + b + ab/100.", steps:[a+" + "+b+" = "+(a+b), "ab/100 = "+round2((a*b)/100), (a+b)+" + "+round2((a*b)/100)+" = "+net]};
+}
+function genSuccPct3(L){
+  const pool=[5,10,15,20,25];
+  let a,b,c;
+  if(Math.random()<0.6){a=b=c=pick(pool.slice(0,scale(L,2,pool.length)));}
+  else{a=pick(pool);b=pick(pool);c=pick(pool);}
+  const step1=a+b+(a*b)/100;
+  const net=round2(step1+c+(step1*c)/100);
+  return {q:a+"%, "+b+"%, "+c+"% successive increases (e.g. 3-yr CI) = single %?",
+    a:net, trick:"Combine two at a time: (a+b+ab/100), then combine with c.",
+    steps:["Combine "+a+"% & "+b+"% → "+round2(step1)+"%", "Combine "+round2(step1)+"% & "+c+"% → "+net+"%"]};
+}
+/* ---- Combine two ratios A:B and B:C, find C given B ---- */
+function genRatioCombine(L){
+  const p=rnd(2,scale(L,4,6)), q=rnd(2,scale(L,4,6));
+  const r=rnd(2,scale(L,4,6)), s=rnd(2,scale(L,4,6));
+  const g=gcd(q,r); const lcm=(q*r)/g;
+  const kAB=lcm/q, kBC=lcm/r;
+  const A=p*kAB, B=lcm, C=s*kBC;
+  const unit=rnd(2,scale(L,3,7));
+  const givenB=B*unit;
+  const ansC=C*unit;
+  return {q:"A:B = "+p+":"+q+", B:C = "+r+":"+s+". If B = "+givenB+", find C",
+    a:ansC, trick:"Match the shared term (B), combine into A:B:C, then scale.",
+    steps:["LCM of "+q+" & "+r+" = "+lcm, "A:B:C = "+A+":"+B+":"+C, "Scale factor = "+givenB+"÷"+B+" = "+unit, "C = "+C+" × "+unit+" = "+ansC]};
+}
+/* ---- Geometry: polygon angle facts ---- */
+function genPolygon(L){
+  const niceNs=[3,4,5,6,8,9,10,12];
+  const type=pick(["interiorSum","exteriorEach","interiorEach","diagonals"]);
+  if(type==="interiorSum"){
+    const n=rnd(3,scale(L,6,12));
+    return {q:"Sum of interior angles of a "+n+"-sided polygon", a:(n-2)*180, trick:"Sum = (n−2) × 180°.", steps:["("+n+"−2) × 180 = "+((n-2)*180)]};
+  } else if(type==="diagonals"){
+    const n=rnd(4,scale(L,6,12));
+    return {q:"Number of diagonals in a "+n+"-sided polygon", a:(n*(n-3))/2, trick:"Diagonals = n(n−3)/2.", steps:[n+"×("+n+"−3) = "+(n*(n-3)), "÷2 = "+((n*(n-3))/2)]};
+  } else if(type==="exteriorEach"){
+    const n=pick(niceNs);
+    return {q:"Each exterior angle of a regular "+n+"-gon", a:360/n, trick:"Exterior angle = 360°/n.", steps:["360 ÷ "+n+" = "+(360/n)]};
+  } else {
+    const n=pick(niceNs);
+    return {q:"Each interior angle of a regular "+n+"-gon", a:180-360/n, trick:"Interior = 180° − (360°/n).", steps:["360 ÷ "+n+" = "+(360/n), "180 − "+(360/n)+" = "+(180-360/n)]};
+  }
+}
+/* ---- Geometry: Pythagorean triples ---- */
+const TRIPLES=[[3,4,5],[6,8,10],[5,12,13],[9,12,15],[8,15,17],[7,24,25],[9,40,41],[12,16,20]];
+function genPythagoras(L){
+  const base=pick(TRIPLES.slice(0,scale(L,3,TRIPLES.length)));
+  const k=rnd(1,scale(L,1,3));
+  const legs=[base[0]*k,base[1]*k]; const hyp=base[2]*k;
+  return {q:"Right triangle legs "+legs[0]+" & "+legs[1]+" → hypotenuse", a:hyp, trick:"Recognize scaled Pythagorean triples (3-4-5, 5-12-13...).", steps:[legs[0]+"² + "+legs[1]+"² = "+(legs[0]*legs[0]+legs[1]*legs[1]), "√"+(legs[0]*legs[0]+legs[1]*legs[1])+" = "+hyp]};
+}
+/* ---- Geometry: static facts (constants, not parametrized) ---- */
+const GEOM_FACTS=[
+  {q:"Sum of angles of a triangle (°)",a:180,trick:"Angle sum property of a triangle.",steps:["Always 180°"]},
+  {q:"Sum of angles of a quadrilateral (°)",a:360,trick:"Angle sum property of a quadrilateral.",steps:["Always 360°"]},
+  {q:"Angle in a semicircle (°)",a:90,trick:"Angle subtended by a diameter is always a right angle.",steps:["Angle in semicircle = 90°"]},
+  {q:"Sum of opposite angles of a cyclic quadrilateral (°)",a:180,trick:"Opposite angles of a cyclic quadrilateral are supplementary.",steps:["Always 180°"]},
+  {q:"Lines of symmetry in an equilateral triangle",a:3,trick:"One through each vertex and the midpoint of the opposite side.",steps:["3 lines of symmetry"]},
+  {q:"Lines of symmetry in a square",a:4,trick:"2 diagonals + 2 through midpoints of sides.",steps:["4 lines of symmetry"]},
+  {q:"Lines of symmetry in a regular hexagon",a:6,trick:"3 through opposite vertices + 3 through opposite edge midpoints.",steps:["6 lines of symmetry"]},
+  {q:"Lines of symmetry in a (non-square) rectangle",a:2,trick:"Only through the midpoints of opposite sides.",steps:["2 lines of symmetry"]},
+  {q:"Lines of symmetry in an isosceles (non-equilateral) triangle",a:1,trick:"Only the line from the apex to the base midpoint.",steps:["1 line of symmetry"]},
+  {q:"Each angle of an equilateral triangle (°)",a:60,trick:"180° ÷ 3 equal angles.",steps:["180 ÷ 3 = 60°"]},
+  {q:"Angle between the diagonals of a rhombus (°)",a:90,trick:"Diagonals of a rhombus always bisect at right angles.",steps:["Always 90°"]},
+  {q:"An interior angle + its adjacent exterior angle (°)",a:180,trick:"They form a linear pair on a straight line.",steps:["Always 180°"]},
+  {q:"Sum of two complementary angles (°)",a:90,trick:"Complementary angles add to 90°.",steps:["Always 90°"]},
+  {q:"Sum of two supplementary angles (°)",a:180,trick:"Supplementary angles add to 180°.",steps:["Always 180°"]},
+  {q:"Degrees in one full revolution",a:360,trick:"One complete turn.",steps:["Always 360°"]},
+  {q:"Sum of adjacent angles in a parallelogram (°)",a:180,trick:"Adjacent angles of a parallelogram are supplementary.",steps:["Always 180°"]},
+  {q:"Minimum number of sides a polygon can have",a:3,trick:"A triangle is the simplest polygon.",steps:["3 sides minimum"]},
+  {q:"Sum of exterior angles of any convex polygon (°)",a:360,trick:"True regardless of the number of sides.",steps:["Always 360°"]},
+];
+function genGeomFact(L){return Object.assign({},pick(GEOM_FACTS));}
+/* ---- Probability ---- */
+function genProbability(L){
+  const type=pick(["bag","dice"]);
+  if(type==="bag"){
+    const total=pick([10,20,25,50,8,16,12,24].slice(0,scale(L,3,8)));
+    const useGreen=Math.random()<0.4 && total>=12;
+    let red,blue,green=0;
+    if(useGreen){green=rnd(1,Math.floor(total/4));red=rnd(1,total-green-1);blue=total-red-green;}
+    else{red=rnd(1,total-1);blue=total-red;}
+    const askColor=pick(useGreen?["red","blue","green"]:["red","blue"]);
+    const count=askColor==="red"?red:askColor==="blue"?blue:green;
+    return {q:"Bag: "+red+" red, "+blue+" blue"+(useGreen?", "+green+" green":"")+" balls. P(picking "+askColor+") in %",
+      a:round2((count/total)*100), trick:"Probability% = favorable/total × 100.", steps:[count+"/"+total+" × 100 = "+round2((count/total)*100)]};
+  } else {
+    const kind=pick(["single","evenodd"]);
+    if(kind==="single"){
+      const n=rnd(1,6);
+      return {q:"Single die thrown. P(getting "+n+") in %", a:round2((1/6)*100), trick:"1 favorable out of 6 faces.", steps:["1/6 × 100 = "+round2((1/6)*100)]};
+    } else {
+      const evenOdd=pick(["even","odd"]);
+      return {q:"Single die thrown. P(getting an "+evenOdd+" number) in %", a:50, trick:"3 of 6 faces are "+evenOdd+".", steps:["3/6 × 100 = 50"]};
+    }
+  }
+}
+/* ---- Profit & Loss variants ---- */
+function genFalseWeight(L){
+  const W=pick([800,750,900,960,600,500,850,950,625,720]);
+  const pct=round2(((1000-W)/W)*100);
+  return {q:"Dealer sells at cost price but weighs only "+W+"g per kg. Profit %", a:pct, trick:"Profit% = (1000−W)/W × 100.", steps:["1000−"+W+" = "+(1000-W), (1000-W)+"/"+W+" × 100 = "+pct]};
+}
+function genSuccDiscount(L){
+  const mp=rnd(scale(L,3,8),scale(L,10,25))*100;
+  const d1=pick([10,20,25,5,15,30]); const d2=pick([10,20,25,5,15]);
+  const sp=round2(mp*(1-d1/100)*(1-d2/100));
+  return {q:"MP ₹"+mp+", successive discounts "+d1+"% & "+d2+"% → SP", a:sp, trick:"Apply each discount in turn.", steps:["After "+d1+"%: "+round2(mp*(1-d1/100)), "After "+d2+"%: "+sp]};
+}
+/* ---- Number system: unit digit & remainder ---- */
+const CYCLE={0:[0],1:[1],2:[2,4,8,6],3:[3,9,7,1],4:[4,6],5:[5],6:[6],7:[7,9,3,1],8:[8,4,2,6],9:[9,1]};
+function genUnitDigit(L){
+  const base=rnd(2,scale(L,9,99));
+  const lastDigit=base%10;
+  const exp=rnd(scale(L,5,20),scale(L,25,199));
+  const cyc=CYCLE[lastDigit];
+  const idx=cyc.length===1?0:(exp-1)%cyc.length;
+  const ans=cyc[idx];
+  return {q:"Unit digit of "+base+"^"+exp, a:ans, trick:"Only the base's last digit's power cycle matters.", steps:["Last digit "+lastDigit+" cycles: "+cyc.join(",")+" (len "+cyc.length+")", "Position "+((exp-1)%cyc.length+1)+" → "+ans]};
+}
+function genRemainder(L){
+  const d=rnd(scale(L,4,9),scale(L,12,30));
+  const q=rnd(scale(L,5,15),scale(L,20,60));
+  const r=rnd(0,d-1);
+  const n=d*q+r;
+  return {q:n+" ÷ "+d+", remainder?", a:r, trick:"Find the nearest lower multiple of the divisor.", steps:[d+" × "+q+" = "+(d*q), n+" − "+(d*q)+" = "+r]};
+}
+/* ---- Fractions: nice-denominator sum ---- */
+function genFractionSum(L){
+  const denoms=[2,4,5,8,10,20,25,50];
+  const d1=pick(denoms.slice(0,scale(L,3,denoms.length))), d2=pick(denoms.slice(0,scale(L,3,denoms.length)));
+  const n1=rnd(1,d1-1), n2=rnd(1,d2-1);
+  const sum=round2(n1/d1+n2/d2);
+  return {q:n1+"/"+d1+" + "+n2+"/"+d2+" (as decimal)", a:sum, trick:"Convert each to decimal, then add.", steps:[n1+"/"+d1+" = "+round2(n1/d1), n2+"/"+d2+" = "+round2(n2/d2), round2(n1/d1)+" + "+round2(n2/d2)+" = "+sum]};
+}
+
 const GEN={
   add:{fn:genAdd,label:"Addition",group:"Arithmetic"},
   sub:{fn:genSub,label:"Subtraction",group:"Arithmetic"},
@@ -685,14 +830,23 @@ const GEN={
   interest:{fn:genInterest,label:"Simple interest",group:"Commercial"},
   ci:{fn:genCI,label:"Compound interest",group:"Commercial"},
   ratio:{fn:genRatio,label:"Ratio",group:"Commercial"},
+  ratioCombine:{fn:genRatioCombine,label:"Combine ratios",group:"Commercial"},
   mixture:{fn:genMixture,label:"Mixtures",group:"Commercial"},
+  succPct2:{fn:genSuccPct2,label:"Successive % change",group:"Commercial"},
+  succPct3:{fn:genSuccPct3,label:"Successive % (3-step/CI)",group:"Commercial"},
+  falseWeight:{fn:genFalseWeight,label:"False weight profit%",group:"Commercial"},
+  succDiscount:{fn:genSuccDiscount,label:"Successive discount",group:"Commercial"},
   fracOf:{fn:genFractionOf,label:"Fraction of",group:"Fractions"},
   fraction:{fn:genFraction,label:"Simplify fraction",group:"Fractions"},
+  fracSum:{fn:genFractionSum,label:"Add fractions",group:"Fractions"},
   average:{fn:genAverage,label:"Averages",group:"Data"},
   simplify:{fn:genSimplify,label:"BODMAS",group:"Data"},
   lcm:{fn:genLCM,label:"LCM",group:"Number Theory"},
   hcf:{fn:genHCF,label:"HCF",group:"Number Theory"},
   series:{fn:genSeries,label:"Number series",group:"Number Theory"},
+  unitDigit:{fn:genUnitDigit,label:"Unit digit of power",group:"Number Theory"},
+  remainder:{fn:genRemainder,label:"Remainder",group:"Number Theory"},
+  probability:{fn:genProbability,label:"Probability",group:"Probability"},
   tsd:{fn:genTSD,label:"Time-Speed-Dist",group:"Applied"},
   timeWork:{fn:genTimeWork,label:"Time & Work",group:"Applied"},
   ages:{fn:genAges,label:"Ages",group:"Applied"},
@@ -704,6 +858,9 @@ const GEN={
   circPerim:{fn:genCirclePerim,label:"Circumference",group:"Mensuration"},
   cubeVol:{fn:genCubeVol,label:"Cube volume",group:"Mensuration"},
   cuboidVol:{fn:genCuboidVol,label:"Cuboid volume",group:"Mensuration"},
+  polygon:{fn:genPolygon,label:"Polygon angles",group:"Geometry"},
+  pythagoras:{fn:genPythagoras,label:"Pythagorean triples",group:"Geometry"},
+  geomFact:{fn:genGeomFact,label:"Geometry facts",group:"Geometry"},
 };
 const ALL_KEYS=Object.keys(GEN);
 const GROUPS=[];ALL_KEYS.forEach(k=>{if(GROUPS.indexOf(GEN[k].group)<0)GROUPS.push(GEN[k].group);});
@@ -1291,15 +1448,23 @@ function grade(ok){
   const delay=ok?(run.mode==="speed"?150:(showingSol?900:450)):(showingSol?2000:1050);
   setTimeout(function(){if(done)endSession();else{nextQuestion();updateStatus();}},delay);
 }
-function matchAns(givenRaw){
+function matchAns(givenRaw,isTyped){
   const q=run.current;
   if(q.isText){return String(givenRaw).trim()===String(q.a).trim();}
   const given=parseFloat(givenRaw);
   if(isNaN(given))return false;
   if(run.approx){const tol=Math.max(0.01,Math.abs(q.a)*0.02);return Math.abs(given-q.a)<=tol;}
+  // Typed (non-MCQ) decimal answers: absorb a hairline rounding-method
+  // difference (e.g. using 3.14 vs 22/7, or rounding a step early) without
+  // accepting a genuinely wrong answer. Whole-number answers stay exact,
+  // and MCQ selection always stays exact (no typed drift to absorb there).
+  if(isTyped&&q.a%1!==0){
+    const tol=Math.max(0.015,Math.abs(q.a)*0.003);
+    return Math.abs(given-q.a)<=tol;
+  }
   return Math.abs(given-q.a)<1e-9;
 }
-function submitTyped(){if(run.locked)return;const raw=document.getElementById("answer").value;if(raw==="")return;run.locked=true;clearQt();document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;run._given=parseFloat(raw);grade(matchAns(raw));}
+function submitTyped(){if(run.locked)return;const raw=document.getElementById("answer").value;if(raw==="")return;run.locked=true;clearQt();document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;run._given=parseFloat(raw);grade(matchAns(raw,true));}
 function chooseMCQ(opt,btn){if(run.locked)return;run.locked=true;clearQt();run._given=opt;const ok=matchAns(opt);document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});if(!ok)btn.classList.add("chosenwrong");grade(ok);}
 function skipQuestion(){if(run.locked)return;run.locked=true;clearQt();run._given=null;if(!run.mcq&&!(run.current&&run.current.isText)){document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;}else document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});grade(false);}
 
