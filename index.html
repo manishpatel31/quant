@@ -191,6 +191,8 @@
   .modalcard input.code{font-family:'DM Mono',monospace; letter-spacing:.3em; text-align:center; font-size:22px}
   .modalcard .merr{color:var(--red); font-size:12.5px; margin:-8px 0 12px; min-height:16px}
   .syncnote{font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; line-height:1.5}
+  .welcomeback{background:color-mix(in srgb,var(--teal) 10%,var(--panel)); border:1px solid color-mix(in srgb,var(--teal) 30%,var(--line)); border-radius:12px; padding:14px 16px; margin-bottom:14px; font-size:15px; text-align:center}
+  .welcomeback b{font-family:'Fraunces',serif; font-size:19px; color:var(--teal); display:block; margin-top:3px}
   .cloudpill{font-size:10px; padding:2px 8px; border-radius:999px; font-weight:700; letter-spacing:.03em}
   .cloudpill.on{background:color-mix(in srgb,var(--green) 16%,var(--panel)); color:var(--green)}
   .cloudpill.off{background:color-mix(in srgb,var(--muted) 16%,var(--panel)); color:var(--muted)}
@@ -204,7 +206,7 @@
     <span class="tag">ssc mental math</span>
   </div>
   <div class="headright">
-    <span class="who" id="whoLabel"></span>
+    <span class="who" id="whoLabel" onclick="switchUser()" style="cursor:pointer" title="Switch code"></span>
     <button class="iconbtn hidden" id="installBtn" onclick="doInstall()" title="Install app">&#8681;</button>
     <span class="cloudpill off" id="cloudPill">local</span>
     <button class="iconbtn" id="soundBtn" onclick="toggleSound()" title="Sound">&#128266;</button>
@@ -333,14 +335,22 @@
 <div id="confetti"></div>
 <div id="loginModal" class="modal hidden">
   <div class="modalcard">
-    <h3>Save your progress</h3>
-    <p>Enter a name and a 4-digit code. Use the same pair on any device to load your stats. <span id="cloudModeNote"></span></p>
-    <label>Name</label>
-    <input id="loginName" maxlength="20" placeholder="e.g. Manish" autocomplete="off">
-    <label>4-digit code</label>
-    <input id="loginCode" class="code" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+    <h3 id="loginTitle">Save your progress</h3>
+    <p id="loginDesc">Enter a 4-digit code. Use the same code on any device to load your stats. <span id="cloudModeNote"></span></p>
+    <div id="codeStep">
+      <label>4-digit code</label>
+      <input id="loginCode" class="code" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+    </div>
+    <div id="nameStep" class="hidden">
+      <div id="welcomeBack" class="welcomeback hidden"></div>
+      <div id="nameFieldWrap">
+        <label>Your name</label>
+        <input id="loginName" maxlength="20" placeholder="e.g. Manish" autocomplete="off">
+      </div>
+    </div>
     <div class="merr" id="loginErr"></div>
-    <button class="primary" id="loginBtn" onclick="doLogin()">Continue</button>
+    <button class="primary" id="loginBtn" onclick="loginNext()">Continue</button>
+    <button class="ghost hidden" id="loginBack" onclick="loginReset()" style="width:100%;margin-top:8px">Use a different code</button>
     <div class="syncnote" id="syncStatus"></div>
   </div>
 </div>
@@ -516,7 +526,7 @@ function initCloud(cb){
     cb&&cb();
   });
 }
-function userKey(){if(!store.user)return null;return (store.user.name+"_"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
+function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
 function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
@@ -791,18 +801,92 @@ function againSession(){
 }
 
 /* ============================================================ LOGIN ============ */
-function openLogin(){document.getElementById("cloudModeNote").textContent=CLOUD_ENABLED?"":"(Cloud sync isn't configured yet, so this saves on this device only.)";document.getElementById("loginModal").classList.remove("hidden");if(store.user){document.getElementById("loginName").value=store.user.name;document.getElementById("loginCode").value=store.user.code;}}
-function doLogin(){
-  const name=document.getElementById("loginName").value.trim();const code=document.getElementById("loginCode").value.trim();const err=document.getElementById("loginErr");
-  if(name.length<1){err.textContent="Enter a name.";return;}
-  if(!/^\d{4}$/.test(code)){err.textContent="Code must be exactly 4 digits.";return;}
-  err.textContent="";store.user={name:name,code:code};saveStore();updateWho();
+let loginState={step:"code",code:null,knownName:null};
+function openLogin(){
+  document.getElementById("loginModal").classList.remove("hidden");
+  loginReset();
+  if(store.user){document.getElementById("loginCode").value=store.user.code;}
+}
+function loginReset(){
+  loginState={step:"code",code:null,knownName:null};
+  document.getElementById("codeStep").classList.remove("hidden");
+  document.getElementById("nameStep").classList.add("hidden");
+  document.getElementById("welcomeBack").classList.add("hidden");
+  document.getElementById("nameFieldWrap").classList.remove("hidden");
+  document.getElementById("loginBack").classList.add("hidden");
+  document.getElementById("loginTitle").textContent="Save your progress";
+  document.getElementById("loginDesc").innerHTML="Enter a 4-digit code. Use the same code on any device to load your stats. <span id=\"cloudModeNote\">"+(CLOUD_ENABLED?"":"(Cloud sync isn't set up, so this saves on this device only.)")+"</span>";
+  document.getElementById("loginBtn").textContent="Continue";
+  document.getElementById("loginErr").textContent="";
+  document.getElementById("syncStatus").textContent="";
+  setTimeout(function(){const c=document.getElementById("loginCode");if(c&&!('ontouchstart' in window))c.focus();},50);
+}
+function loginNext(){
+  const err=document.getElementById("loginErr");
+  if(loginState.step==="code"){
+    const code=document.getElementById("loginCode").value.trim();
+    if(!/^\d{4}$/.test(code)){err.textContent="Code must be exactly 4 digits.";return;}
+    err.textContent="";loginState.code=code;
+    // look up name for this code
+    const proceed=function(name){
+      loginState.knownName=name||null;
+      document.getElementById("codeStep").classList.add("hidden");
+      document.getElementById("nameStep").classList.remove("hidden");
+      document.getElementById("loginBack").classList.remove("hidden");
+      document.getElementById("loginTitle").textContent="Code "+code;
+      if(name){
+        document.getElementById("welcomeBack").classList.remove("hidden");
+        document.getElementById("welcomeBack").innerHTML="Welcome back<b>"+name+"</b>";
+        document.getElementById("nameFieldWrap").classList.add("hidden");
+        document.getElementById("loginDesc").textContent="This code already has a profile. Continue to load your saved stats.";
+      }else{
+        document.getElementById("welcomeBack").classList.add("hidden");
+        document.getElementById("nameFieldWrap").classList.remove("hidden");
+        document.getElementById("loginDesc").textContent="New code — what should we call you?";
+        setTimeout(function(){const n=document.getElementById("loginName");if(n&&!('ontouchstart' in window))n.focus();},50);
+      }
+      loginState.step="name";
+      document.getElementById("loginBtn").textContent=name?"Continue as "+name:"Save & continue";
+    };
+    if(cloudReady){
+      document.getElementById("syncStatus").textContent="Checking code\u2026";
+      lookupName(code,function(name){document.getElementById("syncStatus").textContent="";proceed(name);});
+    }else if(CLOUD_ENABLED){
+      // cloud still connecting — wait up to 4s for it
+      document.getElementById("syncStatus").textContent="Connecting\u2026";
+      let waited=0;const iv=setInterval(function(){waited+=200;
+        if(cloudReady){clearInterval(iv);document.getElementById("syncStatus").textContent="Checking code\u2026";lookupName(code,function(name){document.getElementById("syncStatus").textContent="";proceed(name);});}
+        else if(waited>=4000){clearInterval(iv);document.getElementById("syncStatus").textContent="";const local=(store.user&&store.user.code===code)?store.user.name:null;proceed(local);}
+      },200);
+    }else{
+      const local=(store.user&&store.user.code===code)?store.user.name:null;proceed(local);
+    }
+    return;
+  }
+  // step: name
+  let name=loginState.knownName;
+  if(!name){name=document.getElementById("loginName").value.trim();if(name.length<1){err.textContent="Enter a name.";return;}}
+  err.textContent="";
+  commitLogin(loginState.code,name);
+}
+function lookupName(code,cb){
+  if(!cloudReady){cb(null);return;}
+  const k=("c"+code).toLowerCase().replace(/[^a-z0-9_]/g,"");
+  fbDB.ref("users/"+k+"/name").get().then(function(snap){cb(snap.exists()?snap.val():null);}).catch(function(){cb(null);});
+}
+function commitLogin(code,name){
+  const wasCode=store.user&&store.user.code;
+  store.user={name:name,code:code};
+  // if switching to a different code, clear local data so we load fresh from cloud
+  if(wasCode&&wasCode!==code){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
+  saveStore();updateWho();
   const ss=document.getElementById("syncStatus");
-  if(cloudReady){ss.textContent="Syncing\u2026";pullCloud(function(ok,existed){ss.textContent=ok?(existed?"Loaded your saved data.":"New profile created."):"Couldn't reach cloud — saved locally.";setTimeout(closeLogin,900);goHome();});}
+  if(cloudReady){ss.textContent="Syncing\u2026";pullCloud(function(ok,existed){ss.textContent=ok?(existed?"Loaded your saved data.":"New profile created."):"Couldn't reach cloud — saved locally.";setTimeout(closeLogin,800);goHome();});}
   else{closeLogin();goHome();}
 }
 function closeLogin(){document.getElementById("loginModal").classList.add("hidden");}
 function updateWho(){document.getElementById("whoLabel").textContent=store.user?store.user.name:"";}
+function switchUser(){openLogin();}
 
 /* ---- keyboard shortcuts ---- */
 document.addEventListener("keydown",function(e){
@@ -812,15 +896,17 @@ document.addEventListener("keydown",function(e){
 document.getElementById("answer").addEventListener("keydown",function(e){if(e.key==="Enter")submitTyped();});
 document.getElementById("answer").addEventListener("input",function(e){e.target.value=e.target.value.replace(/[^0-9.\-]/g,"");});
 document.getElementById("loginCode").addEventListener("input",function(e){e.target.value=e.target.value.replace(/[^0-9]/g,"");});
+document.getElementById("loginCode").addEventListener("keydown",function(e){if(e.key==="Enter")loginNext();});
+document.getElementById("loginName").addEventListener("keydown",function(e){if(e.key==="Enter")loginNext();});
 
 /* ---- init ---- */
 function detectKeypad(){useKeypad=('ontouchstart' in window)||navigator.maxTouchPoints>0;const inp=document.getElementById("answer");inp.setAttribute("inputmode",useKeypad?"none":"decimal");}
 detectKeypad();applyTheme();applySound();updateWho();
 document.getElementById("adaptive").checked=cfg.adaptive;document.getElementById("solToggle").checked=cfg.sol;
+goHome();
+if(!store.user)setTimeout(openLogin,300);
 initCloud(function(){
   if(store.user&&cloudReady){pullCloud(function(){goHome();});}
-  else goHome();
-  if(!store.user)setTimeout(openLogin,400);
 });
 
 
