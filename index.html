@@ -197,6 +197,33 @@
   .cloudpill.on{background:color-mix(in srgb,var(--green) 16%,var(--panel)); color:var(--green)}
   .cloudpill.off{background:color-mix(in srgb,var(--muted) 16%,var(--panel)); color:var(--muted)}
   .hidden{display:none}
+  /* overlays */
+  .overlay{position:fixed; inset:0; background:var(--paper); z-index:90; overflow-y:auto; animation:rise .25s}
+  .overlaybar{position:sticky; top:0; background:var(--paper); border-bottom:1px solid var(--line); padding:16px 18px; max-width:780px; margin:0 auto; display:flex; justify-content:space-between; align-items:center}
+  .obtitle{font-family:'Fraunces',serif; font-weight:600; font-size:20px}
+  .overlaybody{max-width:780px; margin:0 auto; padding:18px 18px 60px}
+  .tabrow{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap}
+  .tabbtn{padding:8px 14px; border:1.5px solid var(--line); background:transparent; color:var(--muted); border-radius:999px; font-size:13px; font-weight:600; cursor:pointer}
+  .tabbtn.active{border-color:var(--teal); background:var(--teal); color:#fff}
+  [data-theme="dark"] .tabbtn.active{color:#0e1720}
+  .panehint{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.5}
+  .minirow{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+  .minibtn{padding:9px 14px; background:var(--tealDeep); color:#fff; border:none; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer}
+  [data-theme="dark"] .minibtn{color:#0e1720}
+  .board{display:flex; flex-direction:column; gap:7px; margin-top:10px}
+  .lbrow{display:flex; align-items:center; gap:12px; padding:11px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px}
+  .lbrow.me{border-color:var(--teal); background:color-mix(in srgb,var(--teal) 7%,var(--panel))}
+  .lbrank{width:26px; font-family:'DM Mono',monospace; font-weight:700; color:var(--muted); text-align:center}
+  .lbrank.top{color:var(--amber)}
+  .lbname{flex:1; font-weight:600; font-size:14px}
+  .lbval{font-family:'DM Mono',monospace; font-weight:700; color:var(--teal)}
+  .fcard{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:8px}
+  .fcard .ftop{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+  .fcard .fname{font-weight:700; font-size:14px}
+  .fcard .ftopic{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-family:'DM Mono',monospace}
+  .fcard .fform{font-family:'DM Mono',monospace; font-size:15px; color:var(--teal); margin-top:5px}
+  .fcard .fnote{font-size:12px; color:var(--muted); margin-top:4px}
+  .ftopichead{font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--amber); font-family:'DM Mono',monospace; margin:16px 0 8px}
 </style>
 </head>
 <body>
@@ -232,6 +259,26 @@
         <span class="qs" id="weakSub">Build your history first</span>
       </button>
     </div>
+    <div class="cardrow">
+      <button class="quickcard" id="dailyBtn" onclick="startDaily()" style="background:var(--amber)">
+        <span class="qt">Daily challenge</span>
+        <span class="qs" id="dailySub">Same 15 for everyone today</span>
+      </button>
+      <button class="quickcard" id="srBtn" onclick="startSR()" style="background:var(--coral)">
+        <span class="qt">Review due</span>
+        <span class="qs" id="srSub">Spaced repetition</span>
+      </button>
+    </div>
+    <div class="cardrow">
+      <button class="quickcard" onclick="openFormulas()" style="background:var(--tealDeep)">
+        <span class="qt">Formula cards</span>
+        <span class="qs">Revise 77 formulas</span>
+      </button>
+      <button class="quickcard" onclick="openSocial()" style="background:var(--accent2)">
+        <span class="qt">Leaderboard &amp; challenges</span>
+        <span class="qs">Compete with friends</span>
+      </button>
+    </div>
     <div class="seclabel"><span class="n">01</span><span class="t">Choose a mode</span><span class="rule"></span></div>
     <div class="modes" id="modeGrid"></div>
     <div class="seclabel"><span class="n">02</span><span class="t">Format &amp; scoring</span><span class="rule"></span></div>
@@ -239,6 +286,9 @@
       <label><input type="checkbox" id="mcqToggle" onchange="syncCfg()"> MCQ (multiple choice)</label>
       <label><input type="checkbox" id="negToggle" onchange="syncCfg()"> Negative marking (&minus;0.5)</label>
       <label><input type="checkbox" id="solToggle" checked onchange="syncCfg()"> Show solution on mistakes</label>
+      <label><input type="checkbox" id="approxToggle" onchange="syncCfg()"> Approx mode (within 2%)</label>
+      <label><input type="checkbox" id="perQToggle" onchange="syncCfg()"> Per-question timer</label>
+      <span id="perQSecsWrap" class="hidden" style="display:inline-flex;align-items:center;gap:6px;font-size:13px"><input id="perQSecs" type="number" min="10" max="120" value="40" onchange="syncCfg()" style="width:60px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace"> sec each</span>
     </div>
     <div id="customBox" class="hidden">
       <div class="customrow">
@@ -333,6 +383,72 @@
   </div>
 </div>
 <div id="confetti"></div>
+<!-- FORMULA CARDS OVERLAY -->
+<div id="formulaScreen" class="overlay hidden">
+  <div class="overlaybar">
+    <span class="obtitle">Formula reference</span>
+    <button class="homebtn" onclick="closeOverlay('formulaScreen')">&times; Close</button>
+  </div>
+  <div class="overlaybody">
+    <div id="formulaTopicChips" class="grpchips" style="margin-bottom:16px"></div>
+    <div id="formulaList"></div>
+  </div>
+</div>
+<!-- SOCIAL OVERLAY -->
+<div id="socialScreen" class="overlay hidden">
+  <div class="overlaybar">
+    <span class="obtitle">Leaderboard &amp; challenges</span>
+    <button class="homebtn" onclick="closeOverlay('socialScreen')">&times; Close</button>
+  </div>
+  <div class="overlaybody">
+    <div class="tabrow" id="socialTabs">
+      <button class="tabbtn active" data-tab="global" onclick="socialTab('global')">Global</button>
+      <button class="tabbtn" data-tab="daily" onclick="socialTab('daily')">Daily</button>
+      <button class="tabbtn" data-tab="groups" onclick="socialTab('groups')">Friend group</button>
+      <button class="tabbtn" data-tab="challenge" onclick="socialTab('challenge')">Challenges</button>
+    </div>
+    <div id="tab-global" class="tabpane">
+      <div class="minirow"><label style="font-size:12px;color:var(--muted);font-weight:700">Board:</label>
+        <select id="globalMode" onchange="renderGlobal()" style="padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit"><option value="quiz">Quiz accuracy</option><option value="speed">Speed (solved)</option><option value="mock">Mock accuracy</option></select>
+      </div>
+      <div id="globalBoard" class="board"></div>
+    </div>
+    <div id="tab-daily" class="tabpane hidden">
+      <p class="panehint">Today's challenge score — same 15 questions for everyone.</p>
+      <div id="dailyBoard" class="board"></div>
+    </div>
+    <div id="tab-groups" class="tabpane hidden">
+      <p class="panehint">Create or join a private group with a shared code, then compare.</p>
+      <div class="minirow">
+        <input id="groupInput" placeholder="GROUP CODE" maxlength="12" style="text-transform:uppercase;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;letter-spacing:.1em;flex:1">
+        <button class="minibtn" onclick="doJoinGroup()">Join / Create</button>
+      </div>
+      <div id="myGroups" style="margin:12px 0"></div>
+      <div class="minirow" id="groupBoardControls" style="display:none">
+        <select id="groupMode" onchange="renderGroupBoard()" style="padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit"><option value="quiz">Quiz</option><option value="speed">Speed</option><option value="mock">Mock</option></select>
+      </div>
+      <div id="groupBoard" class="board"></div>
+    </div>
+    <div id="tab-challenge" class="tabpane hidden">
+      <p class="panehint">Challenge friends: share a link/code. They play, results compare.</p>
+      <div class="challengeCreate">
+        <div class="minirow" style="flex-wrap:wrap;gap:8px">
+          <button class="minibtn" onclick="createChallengeUI('set')">New question set</button>
+          <button class="minibtn" onclick="createChallengeUI('streak')">Streak battle</button>
+          <button class="minibtn" onclick="createChallengeUI('accuracy')">Accuracy battle</button>
+        </div>
+        <div id="challengeCreateOut" style="margin-top:10px"></div>
+      </div>
+      <div style="margin-top:18px">
+        <div class="minirow">
+          <input id="challengeInput" placeholder="Paste challenge code" style="padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;flex:1">
+          <button class="minibtn" onclick="openChallenge()">Open</button>
+        </div>
+        <div id="challengeOut" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="loginModal" class="modal hidden">
   <div class="modalcard">
     <h3 id="loginTitle">Save your progress</h3>
@@ -480,6 +596,116 @@ const PYQ=[
   {q:"SI doubles money in how many yr at 25%?",a:4,label:"Simple interest",trick:"100/25.",steps:["Need 100% interest","100 ÷ 25 = 4 yr"]},
 ];
 
+/* ============================================================
+   FORMULA LIBRARY — one-day exam quant (SSC/bank/railway)
+   Each: {topic, name, formula, note?}
+   Used both as reference cards and formula-recall questions.
+   ============================================================ */
+const FORMULAS=[
+  // Percentage
+  {topic:"Percentage",name:"x% of N",formula:"(x/100) × N",note:"10% = move decimal one left"},
+  {topic:"Percentage",name:"Percentage change",formula:"(change / original) × 100"},
+  {topic:"Percentage",name:"x% more than y",formula:"final = y × (1 + x/100)"},
+  {topic:"Percentage",name:"Successive % change a then b",formula:"a + b + (ab/100)"},
+  {topic:"Percentage",name:"Fraction ↔ % (1/8)",formula:"1/8 = 12.5%, 1/6 = 16.67%, 1/3 = 33.33%"},
+  // Profit & Loss
+  {topic:"Profit & Loss",name:"Profit %",formula:"(Profit / CP) × 100"},
+  {topic:"Profit & Loss",name:"Loss %",formula:"(Loss / CP) × 100"},
+  {topic:"Profit & Loss",name:"SP from CP & profit%",formula:"SP = CP × (1 + P%/100)"},
+  {topic:"Profit & Loss",name:"CP from SP & profit%",formula:"CP = SP × 100/(100 + P%)"},
+  {topic:"Profit & Loss",name:"Discount",formula:"Discount = MP − SP; Disc% = (Disc/MP)×100"},
+  {topic:"Profit & Loss",name:"MP with markup & discount",formula:"SP = MP × (1 − d/100)"},
+  {topic:"Profit & Loss",name:"Two articles same SP, ±x%",formula:"Always a loss of (x²/100)%"},
+  // Simple & Compound Interest
+  {topic:"Interest",name:"Simple Interest",formula:"SI = P × R × T / 100"},
+  {topic:"Interest",name:"Amount (SI)",formula:"A = P(1 + RT/100)"},
+  {topic:"Interest",name:"Compound Amount",formula:"A = P(1 + R/100)^T"},
+  {topic:"Interest",name:"Compound Interest",formula:"CI = A − P"},
+  {topic:"Interest",name:"CI for 2 years",formula:"CI = P·R/100·(2 + R/100)"},
+  {topic:"Interest",name:"Difference CI−SI (2 yr)",formula:"P(R/100)²"},
+  {topic:"Interest",name:"Difference CI−SI (3 yr)",formula:"P(R/100)²·(3 + R/100)"},
+  // Ratio & Proportion
+  {topic:"Ratio",name:"Divide N in a:b",formula:"shares = aN/(a+b), bN/(a+b)"},
+  {topic:"Ratio",name:"Proportion a:b = c:d",formula:"a×d = b×c (product of means = extremes)"},
+  {topic:"Ratio",name:"Mean proportional of a,b",formula:"√(a×b)"},
+  // Average
+  {topic:"Average",name:"Average",formula:"Sum of terms / number of terms"},
+  {topic:"Average",name:"Average of 1..n",formula:"(n + 1) / 2"},
+  {topic:"Average",name:"Average of first n even",formula:"n + 1"},
+  {topic:"Average",name:"Average of first n odd",formula:"n"},
+  {topic:"Average",name:"New average when one replaced",formula:"old avg ± (change / count)"},
+  // Time, Speed, Distance
+  {topic:"Speed",name:"Speed",formula:"Distance / Time"},
+  {topic:"Speed",name:"km/h → m/s",formula:"× 5/18"},
+  {topic:"Speed",name:"m/s → km/h",formula:"× 18/5"},
+  {topic:"Speed",name:"Train crossing a pole",formula:"time = length / speed"},
+  {topic:"Speed",name:"Train crossing a platform",formula:"time = (Ltrain + Lplatform)/speed"},
+  {topic:"Speed",name:"Relative speed (opposite)",formula:"s1 + s2"},
+  {topic:"Speed",name:"Relative speed (same dir)",formula:"s1 − s2"},
+  {topic:"Speed",name:"Average speed (equal dist)",formula:"2xy/(x + y)"},
+  {topic:"Speed",name:"Boat downstream",formula:"boat + stream"},
+  {topic:"Speed",name:"Boat upstream",formula:"boat − stream"},
+  // Time & Work
+  {topic:"Time & Work",name:"Work rate",formula:"1 / days"},
+  {topic:"Time & Work",name:"A & B together",formula:"(a×b)/(a+b) days"},
+  {topic:"Time & Work",name:"Work = M×D",formula:"M1·D1 = M2·D2 (men × days const)"},
+  {topic:"Time & Work",name:"Efficiency ratio",formula:"inverse of time ratio"},
+  // Number System
+  {topic:"Numbers",name:"LCM × HCF",formula:"= product of the two numbers"},
+  {topic:"Numbers",name:"Sum of first n naturals",formula:"n(n + 1)/2"},
+  {topic:"Numbers",name:"Sum of first n squares",formula:"n(n+1)(2n+1)/6"},
+  {topic:"Numbers",name:"Sum of first n cubes",formula:"[n(n+1)/2]²"},
+  {topic:"Numbers",name:"Divisibility by 3",formula:"digit sum divisible by 3"},
+  {topic:"Numbers",name:"Divisibility by 11",formula:"alt digit sum diff divisible by 11"},
+  // Mensuration — 2D
+  {topic:"Mensuration 2D",name:"Rectangle area",formula:"length × breadth"},
+  {topic:"Mensuration 2D",name:"Rectangle perimeter",formula:"2(l + b)"},
+  {topic:"Mensuration 2D",name:"Square area",formula:"side²"},
+  {topic:"Mensuration 2D",name:"Square diagonal",formula:"side × √2"},
+  {topic:"Mensuration 2D",name:"Triangle area",formula:"½ × base × height"},
+  {topic:"Mensuration 2D",name:"Equilateral triangle area",formula:"(√3/4) × side²"},
+  {topic:"Mensuration 2D",name:"Circle area",formula:"π r²"},
+  {topic:"Mensuration 2D",name:"Circle circumference",formula:"2 π r"},
+  {topic:"Mensuration 2D",name:"Parallelogram area",formula:"base × height"},
+  {topic:"Mensuration 2D",name:"Rhombus area",formula:"½ × d1 × d2"},
+  {topic:"Mensuration 2D",name:"Trapezium area",formula:"½ × (a + b) × height"},
+  // Mensuration — 3D
+  {topic:"Mensuration 3D",name:"Cube volume",formula:"side³"},
+  {topic:"Mensuration 3D",name:"Cube surface area",formula:"6 × side²"},
+  {topic:"Mensuration 3D",name:"Cuboid volume",formula:"l × b × h"},
+  {topic:"Mensuration 3D",name:"Cuboid surface area",formula:"2(lb + bh + hl)"},
+  {topic:"Mensuration 3D",name:"Cylinder volume",formula:"π r² h"},
+  {topic:"Mensuration 3D",name:"Cylinder curved SA",formula:"2 π r h"},
+  {topic:"Mensuration 3D",name:"Cone volume",formula:"⅓ π r² h"},
+  {topic:"Mensuration 3D",name:"Sphere volume",formula:"(4/3) π r³"},
+  {topic:"Mensuration 3D",name:"Sphere surface area",formula:"4 π r²"},
+  {topic:"Mensuration 3D",name:"Hemisphere volume",formula:"(2/3) π r³"},
+  // Algebra identities
+  {topic:"Algebra",name:"(a+b)²",formula:"a² + 2ab + b²"},
+  {topic:"Algebra",name:"(a−b)²",formula:"a² − 2ab + b²"},
+  {topic:"Algebra",name:"a² − b²",formula:"(a+b)(a−b)"},
+  {topic:"Algebra",name:"(a+b)³",formula:"a³ + b³ + 3ab(a+b)"},
+  {topic:"Algebra",name:"a³ + b³",formula:"(a+b)(a² − ab + b²)"},
+  {topic:"Algebra",name:"a³ − b³",formula:"(a−b)(a² + ab + b²)"},
+  {topic:"Algebra",name:"a³+b³+c³−3abc",formula:"(a+b+c)(a²+b²+c²−ab−bc−ca)"},
+  // Averages/mixture/alligation
+  {topic:"Mixture",name:"Alligation rule",formula:"(cheaper:dearer) = (d−m):(m−c)"},
+  {topic:"Mixture",name:"Final concentration",formula:"total pure / total volume"},
+];
+const FORMULA_TOPICS=[];FORMULAS.forEach(f=>{if(FORMULA_TOPICS.indexOf(f.topic)<0)FORMULA_TOPICS.push(f.topic);});
+
+/* Formula-recall question generator: shows the name, asks which formula (MCQ-friendly),
+   or shows formula and asks the name. We generate an MCQ set. */
+function genFormulaQ(){
+  const f=pick(FORMULAS);
+  // ask: which formula matches this name? distractors = other formulas
+  const others=[];const pool=FORMULAS.filter(x=>x.formula!==f.formula);
+  while(others.length<3&&pool.length){const idx=rnd(0,pool.length-1);const cand=pool.splice(idx,1)[0];if(!others.includes(cand.formula)&&cand.formula!==f.formula)others.push(cand.formula);}
+  const opts=[f.formula].concat(others);
+  for(let i=opts.length-1;i>0;i--){const j=rnd(0,i);const t=opts[i];opts[i]=opts[j];opts[j]=t;}
+  return {q:f.name+"  ("+f.topic+")",a:f.formula,label:"Formula recall",key:"formula",isText:true,mcqOptions:opts,trick:f.note||"Revise this from the Formula cards.",steps:[f.name+" = "+f.formula]};
+}
+
 
 /* ============================================================
    FIREBASE CONFIG  — paste your 6 values here to enable cloud sync.
@@ -500,7 +726,7 @@ let fbDB=null, cloudReady=false;
 const LS_KEY="quant_v3";
 const APP_EPOCH=1735689600000; // 2025-01-01, floor for clock-sanity checks
 function nowTs(){const t=Date.now();return (t<APP_EPOCH||t>APP_EPOCH+50*365*24*3600*1000)?APP_EPOCH:t;}
-function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0};}
+function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0, sr:{}, groups:[], dailyDone:null};}
 function loadStore(){try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s)return Object.assign(blankStore(),s);}catch(e){}return blankStore();}
 function saveStore(){store.updatedAt=nowTs();try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}if(cloudReady&&store.user&&!suppressPush)pushCloud();}
 let suppressPush=false;
@@ -531,8 +757,8 @@ function initCloud(cb){
   });
 }
 function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
-function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs()};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
-function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;}
+function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
+function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;store.sr=d.sr||{};store.groups=d.groups||[];store.dailyDone=d.dailyDone||null;}
 /* pullCloud: used at LOGIN — identity wins, cloud copy is authoritative for that code. */
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
@@ -577,9 +803,10 @@ const MODES=[
   {id:"mock",name:"Mock test",desc:"25 questions, 15 min simulation.",icon:"\u270e"},
   {id:"custom",name:"Custom",desc:"Set your own count and timer.",icon:"\u2699"},
   {id:"pyq",name:"Previous-year",desc:"Real SSC-style questions.",icon:"\u2605"},
+  {id:"formula",name:"Formula recall",desc:"Match formulas to their names.",icon:"\u0192"},
 ];
 const LEVEL_NAMES=["Warm-up","Easy","Medium","Hard","Brutal"];
-let cfg={mode:"practice",level:2,adaptive:true,keys:new Set(ALL_KEYS),mcq:false,neg:false,sol:true,customCount:20,customMins:15};
+let cfg={mode:"practice",level:2,adaptive:true,keys:new Set(ALL_KEYS),mcq:false,neg:false,sol:true,perQ:0,approx:false,customCount:20,customMins:15};
 let run=null, timerHandle=null, qStartTime=0, qtInterval=null, useKeypad=false;
 
 /* ---- sound ---- */
@@ -621,7 +848,7 @@ function renderLevels(){const c=document.getElementById("levelChips");c.innerHTM
   for(let l=1;l<=5;l++){(function(l){const b=document.createElement("button");b.className="chip"+(cfg.level===l?" active":"");b.textContent=LEVEL_NAMES[l-1];b.onclick=function(){cfg.level=l;renderLevels();};c.appendChild(b);})(l);}
   const wrap=document.getElementById("levelWrap");wrap.style.opacity=cfg.adaptive?"0.45":"1";wrap.style.pointerEvents=cfg.adaptive?"none":"auto";document.getElementById("levelHint").style.display=cfg.adaptive?"block":"none";}
 function toggleAdaptive(){cfg.adaptive=document.getElementById("adaptive").checked;renderLevels();}
-function syncCfg(){cfg.mcq=document.getElementById("mcqToggle").checked;cfg.neg=document.getElementById("negToggle").checked;cfg.sol=document.getElementById("solToggle").checked;}
+function syncCfg(){cfg.mcq=document.getElementById("mcqToggle").checked;cfg.neg=document.getElementById("negToggle").checked;cfg.sol=document.getElementById("solToggle").checked;cfg.approx=document.getElementById("approxToggle").checked;const pq=document.getElementById("perQToggle").checked;cfg.perQ=pq?(parseInt(document.getElementById("perQSecs").value)||40):0;document.getElementById("perQSecsWrap").classList.toggle("hidden",!pq);}
 function renderTopics(){const area=document.getElementById("topicArea");area.innerHTML="";
   GROUPS.forEach(function(grp){const gk=ALL_KEYS.filter(k=>GEN[k].group===grp);const allOn=gk.every(k=>cfg.keys.has(k));
     const wrap=document.createElement("div");wrap.className="grp";
@@ -666,11 +893,14 @@ function renderGoal(){rollDay();const done=Math.min(store.todayCount||0,DAILY_GO
 
 /* ============================================================ NAV ============ */
 function show(id){["home","engine","results"].forEach(s=>document.getElementById(s).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.getElementById("homeBtn").classList.toggle("hidden",id==="home");}
-function goHome(){clearTimer();clearQt();renderModes();renderLevels();renderTopics();renderWeak();renderChart();renderMastery();renderRecent();renderGoal();updateStartLabel();document.getElementById("customBox").classList.toggle("hidden",cfg.mode!=="custom");show("home");}
+function goHome(){clearTimer();clearQt();renderModes();renderLevels();renderTopics();renderWeak();renderDailyBtn();renderSRBtn();renderChart();renderMastery();renderRecent();renderGoal();updateStartLabel();document.getElementById("customBox").classList.toggle("hidden",cfg.mode!=="custom");show("home");}
+function renderDailyBtn(){const sub=document.getElementById("dailySub");if(dailyDoneToday())sub.textContent="Done today ✓ score "+(store.dailyScore!=null?store.dailyScore:"");else sub.textContent="Same 15 for everyone today";}
+function renderSRBtn(){srInit();const due=srDueKeys().length;const sub=document.getElementById("srSub");const btn=document.getElementById("srBtn");if(due>0){sub.textContent=due+" topic"+(due>1?"s":"")+" due now";btn.disabled=false;}else{const weak=srWeakKeys().length;if(weak>0){sub.textContent=weak+" weak to review";btn.disabled=false;}else{sub.textContent="Nothing due yet";btn.style.opacity="0.6";}}}
 
 /* ============================================================ SESSIONS ============ */
-function baseRun(extra){return Object.assign({idx:0,correct:0,wrong:0,streak:0,attempts:[],locked:false,current:null,score:0,mcq:cfg.mcq,neg:cfg.neg,sol:cfg.sol,adaptive:cfg.adaptive,level:cfg.adaptive?2:cfg.level},extra);}
+function baseRun(extra){return Object.assign({idx:0,correct:0,wrong:0,streak:0,attempts:[],locked:false,current:null,score:0,mcq:cfg.mcq,neg:cfg.neg,sol:cfg.sol,perQ:cfg.perQ,approx:cfg.approx,adaptive:cfg.adaptive,level:cfg.adaptive?2:cfg.level},extra);}
 function startSession(){
+  if(cfg.mode==="formula"){startFormula();return;}
   let total,timer,keys=Array.from(cfg.keys),mode=cfg.mode,pool=null,fixedList=null;
   if(mode==="practice"){total=Infinity;timer=null;}
   else if(mode==="quiz"){total=20;timer=null;}
@@ -679,6 +909,8 @@ function startSession(){
   else if(mode==="custom"){total=Math.max(1,Math.min(100,parseInt(document.getElementById("customCount").value)||20));const mn=Math.max(0,parseInt(document.getElementById("customMins").value)||0);timer=mn>0?mn*60:null;}
   else if(mode==="pyq"){const p=PYQ.slice();for(let i=p.length-1;i>0;i--){const j=rnd(0,i);const t=p[i];p[i]=p[j];p[j]=t;}pool=p;total=Math.min(15,p.length);timer=null;}
   run=baseRun({mode:mode,keys:keys,total:total,timer:timer,timeLeft:timer,pyqPool:pool,fixedList:fixedList});
+  // per-question timer doesn't combine with speed (already fast) or practice (untimed learning)
+  if(mode==="speed"||mode==="practice")run.perQ=0;
   launch();
 }
 function startWeak(){const wk=weakKeys(70);if(wk.length===0)return;run=baseRun({mode:"weak",keys:wk,total:15,timer:null,timeLeft:null,pyqPool:null,fixedList:null,adaptive:false,level:cfg.level});launch();}
@@ -689,19 +921,27 @@ function launch(){
   const timer=run.timer;
   document.getElementById("accWrap").classList.toggle("hidden",run.mode==="speed");
   document.getElementById("scoreWrap").classList.toggle("hidden",!run.neg);
-  document.getElementById("lvlWrap").classList.toggle("hidden",!(run.adaptive&&run.mode!=="pyq"&&run.mode!=="redo"));
+  const noAdapt=(run.mode==="pyq"||run.mode==="redo"||run.mode==="formula"||run.mode==="daily"||run.mode==="sr"||run.mode==="challenge");
+  document.getElementById("lvlWrap").classList.toggle("hidden",!(run.adaptive&&!noAdapt));
   document.getElementById("timer").classList.toggle("hidden",timer==null);
   document.getElementById("counter").classList.toggle("hidden",run.total===Infinity);
   document.getElementById("progressWrap").classList.toggle("hidden",run.total===Infinity);
   document.getElementById("paceWrap").classList.toggle("hidden",run.mode!=="speed");
-  document.getElementById("skipBtn").classList.toggle("hidden",!(run.mode==="practice"||run.mode==="quiz"||run.mode==="pyq"||run.mode==="weak"||run.mode==="custom"||run.mode==="redo"));
+  document.getElementById("skipBtn").classList.toggle("hidden",run.mode==="speed"||run.mode==="mock");
   document.getElementById("endBtn").textContent=(run.mode==="practice")?"End & see summary":"Quit";
   show("engine");nextQuestion();updateStatus();
   if(timer!=null)startTimer();
 }
 function startTimer(){clearTimer();timerHandle=setInterval(function(){run.timeLeft--;updateStatus();if(run.timeLeft<=0){clearTimer();endSession();}},1000);}
 function clearTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null;}}
-function startQt(){qStartTime=Date.now();clearQt();qtInterval=setInterval(function(){const s=(Date.now()-qStartTime)/1000;document.getElementById("sQt").textContent=s.toFixed(1)+"s";if(run.mode==="speed")updatePace();},100);}
+function startQt(){qStartTime=Date.now();clearQt();qtInterval=setInterval(function(){const s=(Date.now()-qStartTime)/1000;
+  if(run.perQ){if(!run.locked){run.qLeft=Math.max(0,run.perQ-Math.floor(s));renderQClock();if(run.qLeft<=0&&!run.locked){qTimeout();}}}
+  else{document.getElementById("sQt").textContent=s.toFixed(1)+"s";}
+  if(run.mode==="speed")updatePace();},100);}
+function qTimeout(){if(run.locked)return;run.locked=true;run._given=null;run._timedOut=true;
+  if(!run.mcq&&!(run.current&&run.current.isText)){document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;}
+  else document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});
+  grade(false);}
 function clearQt(){if(qtInterval){clearInterval(qtInterval);qtInterval=null;}}
 function updatePace(){const elapsed=60-run.timeLeft;const rate=elapsed>0?run.correct/elapsed:0;const projected=Math.round(rate*60);const target=25;
   document.getElementById("paceFill").style.width=Math.min(100,run.correct/target*100)+"%";
@@ -711,6 +951,7 @@ function updatePace(){const elapsed=60-run.timeLeft;const rate=elapsed>0?run.cor
 function nextQuestion(){
   if(run.fixedList){const item=run.fixedList[run.idx%run.fixedList.length];run.current=Object.assign({},item);}
   else if(run.pyqPool){const item=run.pyqPool[run.idx%run.pyqPool.length];run.current={q:item.q,a:item.a,label:item.label,key:"pyq_"+item.label,trick:item.trick,steps:item.steps,note:item.note};}
+  else if(run.mode==="formula"){run.current=genFormulaQ();}
   else run.current=makeQuestion(run.keys,run.level);
   run.locked=false;
   const card=document.getElementById("qcard");card.className="qcard fresh";
@@ -718,11 +959,14 @@ function nextQuestion(){
   document.getElementById("qtext").textContent=run.current.q;
   const fb=document.getElementById("fbline");fb.className="fbline";fb.textContent="";
   const sb=document.getElementById("solBox");sb.className="solbox";sb.innerHTML="";
-  if(run.mcq){
+  const isText=!!run.current.isText;
+  // formula recall is always MCQ (string options); numeric questions honor run.mcq
+  const useMcq=run.mcq||isText;
+  if(useMcq){
     document.getElementById("typeArea").classList.add("hidden");document.getElementById("keypad").classList.remove("show");
     const grid=document.getElementById("mcqArea");grid.classList.remove("hidden");grid.innerHTML="";
-    run.current.options=makeOptions(run.current.a);
-    run.current.options.forEach(function(opt,i){const b=document.createElement("button");b.className="mcqbtn";b.innerHTML='<span class="kbd">'+(i+1)+'</span>'+opt;b.onclick=function(){chooseMCQ(opt,b);};grid.appendChild(b);});
+    run.current.options=isText?run.current.mcqOptions:makeOptions(run.current.a);
+    run.current.options.forEach(function(opt,i){const b=document.createElement("button");b.className="mcqbtn";b.innerHTML='<span class="kbd">'+(i+1)+'</span>'+opt;b.setAttribute("data-opt",opt);b.onclick=function(){chooseMCQ(opt,b);};grid.appendChild(b);});
   }else{
     document.getElementById("mcqArea").classList.add("hidden");
     const ta=document.getElementById("typeArea");ta.classList.remove("hidden");
@@ -730,8 +974,11 @@ function nextQuestion(){
     document.getElementById("keypad").classList.toggle("show",useKeypad);
     if(!useKeypad)setTimeout(()=>inp.focus(),30);
   }
+  // per-question timer
+  if(run.perQ){run.qLeft=run.perQ;renderQClock();}
   startQt();
 }
+function renderQClock(){const el=document.getElementById("sQt");if(run.perQ){el.textContent=run.qLeft+"s \u23f1";el.style.color=run.qLeft<=5?"var(--red)":"var(--ink)";}}
 function fmtTime(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 function updateStatus(){
   document.getElementById("sCorrect").textContent=run.correct;document.getElementById("sWrong").textContent=run.wrong;
@@ -748,24 +995,34 @@ function showSolution(q,ok){const sb=document.getElementById("solBox");let html=
   sb.innerHTML=html;sb.className="solbox show";}
 function grade(ok){
   const q=run.current,secs=(Date.now()-qStartTime)/1000;
-  run.attempts.push({q:q.q,a:q.a,given:run._given,ok:ok,note:q.note,label:q.label,key:q.key,secs:secs,steps:q.steps,trick:q.trick});
+  run.attempts.push({q:q.q,a:q.a,given:run._given,ok:ok,note:q.note,label:q.label,key:q.key,secs:secs,steps:q.steps,trick:q.trick,isText:q.isText});
   bumpMastery(q.key,ok);
+  srRecord(q,ok);
   const card=document.getElementById("qcard"),fb=document.getElementById("fbline");
   if(ok){run.correct++;run.streak++;run.score+=1;sndRight();card.className="qcard right";fb.className="fbline right";fb.textContent="Correct \u2713 \u00b7 "+secs.toFixed(1)+"s";
-    if(run.adaptive&&run.mode!=="pyq"&&run.mode!=="redo"&&run.streak%4===0&&run.level<5)run.level++;
+    if(run.adaptive&&run.mode!=="pyq"&&run.mode!=="redo"&&run.mode!=="formula"&&run.streak%4===0&&run.level<5)run.level++;
     if(run.mode==="practice"&&run.sol)showSolution(q,true);
-  }else{run.wrong++;run.streak=0;sndWrong();if(run.neg)run.score-=0.5;card.className="qcard wrong";fb.className="fbline wrong";fb.textContent="Answer: "+q.a+(q.note?" ("+q.note+")":"");
-    if(run.adaptive&&run.mode!=="pyq"&&run.mode!=="redo"&&run.level>1)run.level--;
+  }else{run.wrong++;run.streak=0;sndWrong();if(run.neg)run.score-=0.5;card.className="qcard wrong";fb.className="fbline wrong";fb.textContent=(run._timedOut?"Time up! ":"")+"Answer: "+q.a+(q.note?" ("+q.note+")":"");
+    if(run.adaptive&&run.mode!=="pyq"&&run.mode!=="redo"&&run.mode!=="formula"&&run.level>1)run.level--;
     if(run.sol)showSolution(q,false);}
+  run._timedOut=false;
   updateStatus();run.idx++;
   const done=run.idx>=run.total;
   const showingSol=(!ok&&run.sol)||(ok&&run.mode==="practice"&&run.sol);
   const delay=ok?(run.mode==="speed"?150:(showingSol?900:450)):(showingSol?2000:1050);
   setTimeout(function(){if(done)endSession();else{nextQuestion();updateStatus();}},delay);
 }
-function submitTyped(){if(run.locked)return;const raw=document.getElementById("answer").value;if(raw==="")return;run.locked=true;clearQt();document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;const given=parseFloat(raw);run._given=given;grade(Math.abs(given-run.current.a)<1e-9);}
-function chooseMCQ(opt,btn){if(run.locked)return;run.locked=true;clearQt();run._given=opt;const ok=Math.abs(opt-run.current.a)<1e-9;document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;const v=parseFloat(b.textContent);if(Math.abs(v-run.current.a)<1e-9)b.classList.add("correct");});if(!ok)btn.classList.add("chosenwrong");grade(ok);}
-function skipQuestion(){if(run.locked)return;run.locked=true;clearQt();run._given=null;if(!run.mcq){document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;}else document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(Math.abs(parseFloat(b.textContent)-run.current.a)<1e-9)b.classList.add("correct");});grade(false);}
+function matchAns(givenRaw){
+  const q=run.current;
+  if(q.isText){return String(givenRaw).trim()===String(q.a).trim();}
+  const given=parseFloat(givenRaw);
+  if(isNaN(given))return false;
+  if(run.approx){const tol=Math.max(0.01,Math.abs(q.a)*0.02);return Math.abs(given-q.a)<=tol;}
+  return Math.abs(given-q.a)<1e-9;
+}
+function submitTyped(){if(run.locked)return;const raw=document.getElementById("answer").value;if(raw==="")return;run.locked=true;clearQt();document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;run._given=parseFloat(raw);grade(matchAns(raw));}
+function chooseMCQ(opt,btn){if(run.locked)return;run.locked=true;clearQt();run._given=opt;const ok=matchAns(opt);document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});if(!ok)btn.classList.add("chosenwrong");grade(ok);}
+function skipQuestion(){if(run.locked)return;run.locked=true;clearQt();run._given=null;if(!run.mcq&&!(run.current&&run.current.isText)){document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;}else document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});grade(false);}
 
 /* keypad */
 function kp(d){const inp=document.getElementById("answer");if(inp.disabled)return;if(d==="."&&inp.value.includes("."))return;inp.value+=d;}
@@ -774,14 +1031,20 @@ function kpDel(){const inp=document.getElementById("answer");if(inp.disabled)ret
 function endSession(){
   clearTimer();clearQt();
   const tot=run.correct+run.wrong;const avgT=run.attempts.length?run.attempts.reduce((s,a)=>s+a.secs,0)/run.attempts.length:0;
-  const score=run.neg?Math.round(run.score*10)/10:(run.mode==="speed"?run.correct:Math.round(run.correct/Math.max(1,tot)*100));
+  const acc=Math.round(run.correct/Math.max(1,tot)*100);
+  const score=run.neg?Math.round(run.score*10)/10:(run.mode==="speed"?run.correct:acc);
   store.history.unshift({mode:run.mode,total:Math.max(1,tot),correct:run.correct,wrong:run.wrong,score:score,neg:run.neg,avgT:Math.round(avgT*10)/10});
   store.history=store.history.slice(0,40);
-  // best tracking
-  const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:Math.round(run.correct/Math.max(1,tot)*100));
+  const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:acc);
   let isBest=false;if(!store.best)store.best={};if(store.best[bkey]==null||bval>store.best[bkey]){if(store.history.length>1||store.best[bkey]!=null)isBest=(store.best[bkey]!=null);store.best[bkey]=bval;}
-  run._isBest=isBest;run._avgT=avgT;
-  lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick}));
+  run._isBest=isBest;run._avgT=avgT;run._acc=acc;
+  // daily challenge: mark done + record score for leaderboard
+  if(run.mode==="daily"){store.dailyDone=dateSeed();store.dailyScore=run.correct;if(cloudReady)submitDaily(run.correct);}
+  // update global leaderboard best (speed count / quiz acc)
+  if(cloudReady&&(run.mode==="quiz"||run.mode==="speed"||run.mode==="mock")){submitLeaderboard(run.mode,bval);}
+  // challenge set result
+  if(run.mode==="challenge"&&run.challengeMeta){run._challengeResult={score:run.correct,total:tot};if(cloudReady)submitChallengeResult(run.challengeMeta,run.correct,tot);}
+  lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick,isText:a.isText,mcqOptions:a.mcqOptions}));
   recordActivity(tot);saveStore();renderResults();
 }
 
@@ -955,6 +1218,283 @@ if(!store.user)setTimeout(openLogin,300);
 initCloud(function(){
   if(store.user&&cloudReady){syncMerge(function(){goHome();});}
 });
+
+
+/* ============================================================
+   SPACED REPETITION — resurfaces question TYPES you miss.
+   Stored per topic-key in store.sr = { key: {due, streak, ease} }
+   Simple Leitner-style: wrong -> due soon; right -> pushed further out.
+   ============================================================ */
+function srInit(){if(!store.sr)store.sr={};}
+function srRecord(q,ok){
+  srInit();const key=q.key;if(!key)return;
+  const now=nowTs();
+  let e=store.sr[key]||{streak:0,due:now,box:0};
+  if(ok){e.box=Math.min(5,(e.box||0)+1);e.streak=(e.streak||0)+1;}
+  else{e.box=0;e.streak=0;}
+  // interval by box (in ms): 0=10min,1=1d,2=3d,3=7d,4=16d,5=35d
+  const days=[0.007,1,3,7,16,35][e.box];
+  e.due=now+days*24*3600*1000;
+  store.sr[key]=e;
+  // don't push cloud on every question; endSession saves.
+}
+function srDueKeys(){srInit();const now=nowTs();const due=[];for(const k in store.sr){if(GEN[k]&&store.sr[k].due<=now)due.push(k);}return due;}
+function srWeakKeys(){srInit();const arr=[];for(const k in store.sr){if(GEN[k]&&store.sr[k].box<=1)arr.push(k);}return arr;}
+
+/* ============================================================
+   DAILY CHALLENGE — same questions for everyone, seeded by date.
+   Deterministic RNG so all users get the identical 15-question set.
+   ============================================================ */
+function seededRng(seed){let s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function dateSeed(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function buildDailySet(){
+  const rng=seededRng(dateSeed());
+  const savedRnd=window.__rndOverride;
+  // temporarily override rnd/pick determinism by seeding a local generator
+  const localPick=a=>a[Math.floor(rng()*a.length)];
+  const keys=ALL_KEYS;
+  const set=[];
+  for(let i=0;i<15;i++){
+    const key=localPick(keys);
+    // use the generator but with seeded randomness: we monkeypatch Math.random for this call
+    const origRandom=Math.random;Math.random=rng;
+    const base=GEN[key].fn(3);
+    Math.random=origRandom;
+    set.push(Object.assign({},base,{key:key,label:GEN[key].label}));
+  }
+  return set;
+}
+function dailyDoneToday(){return store.dailyDone===dateSeed();}
+
+/* ============================================================
+   NEW MODE STARTERS
+   ============================================================ */
+function startSR(){
+  const due=srDueKeys();const keys=due.length?due:srWeakKeys();
+  if(keys.length===0){toast("Nothing due for review yet — play some sessions first.");return;}
+  run=baseRun({mode:"sr",keys:keys,total:Math.min(15,Math.max(5,keys.length*2)),timer:null,timeLeft:null,pyqPool:null,fixedList:null,adaptive:false,level:cfg.level});
+  launch();
+}
+function startDaily(){
+  const set=buildDailySet();
+  run=baseRun({mode:"daily",keys:[],total:set.length,timer:null,timeLeft:null,pyqPool:null,fixedList:set,adaptive:false,level:3,mcq:false});
+  launch();
+}
+function startFormula(){
+  run=baseRun({mode:"formula",keys:[],total:cfg.mode==="custom"?20:15,timer:null,timeLeft:null,pyqPool:null,fixedList:null,adaptive:false,level:3});
+  launch();
+}
+function startChallengeSet(setObj){
+  // setObj: {questions:[...], from, exp}
+  run=baseRun({mode:"challenge",keys:[],total:setObj.questions.length,timer:null,timeLeft:null,pyqPool:null,fixedList:setObj.questions.map(function(x){return Object.assign({},x);}),adaptive:false,level:3,challengeMeta:setObj});
+  launch();
+}
+
+/* tiny toast */
+function toast(msg){let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:300;box-shadow:0 6px 24px rgba(0,0,0,.2);max-width:90vw;text-align:center";document.body.appendChild(t);}t.textContent=msg;t.style.opacity="1";clearTimeout(window.__toastT);window.__toastT=setTimeout(function(){t.style.opacity="0";t.style.transition="opacity .4s";},2600);}
+
+
+/* ============================================================
+   SOCIAL — leaderboards, daily challenge board, friend challenges.
+   Firebase paths:
+     leaderboard/{mode}/{code} = {name, val, ts}
+     daily/{dateSeed}/{code}   = {name, score, ts}
+     groups/{groupCode}/members/{code} = {name}
+     challenges/{challengeId}  = {from, fromName, type, questions?, exp, results/{code}:{name,score,total}}
+   All guarded by cloudReady. Code-only identity (as chosen).
+   ============================================================ */
+function myCode(){return store.user?store.user.code:null;}
+function myName(){return store.user?store.user.name:"Anon";}
+
+/* ---- Leaderboard ---- */
+function submitLeaderboard(mode,val){
+  if(!cloudReady||!store.user)return;
+  const code=myCode();
+  const ref=fbDB.ref("leaderboard/"+mode+"/c"+code);
+  ref.get().then(function(snap){
+    const prev=snap.exists()?snap.val():null;
+    if(!prev||val>prev.val){ref.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}
+  }).catch(()=>{});
+}
+function submitDaily(score){
+  if(!cloudReady||!store.user)return;
+  fbDB.ref("daily/d"+dateSeed()+"/c"+myCode()).set({name:myName(),score:score,ts:nowTs()}).catch(()=>{});
+}
+function loadLeaderboard(mode,cb){
+  if(!cloudReady){cb(null);return;}
+  fbDB.ref("leaderboard/"+mode).get().then(function(snap){
+    if(!snap.exists()){cb([]);return;}
+    const rows=[];snap.forEach(function(c){const v=c.val();rows.push({code:c.key.replace(/^c/,''),name:v.name,val:v.val});});
+    rows.sort(function(a,b){return b.val-a.val;});cb(rows.slice(0,50));
+  }).catch(function(){cb(null);});
+}
+function loadDailyBoard(cb){
+  if(!cloudReady){cb(null);return;}
+  fbDB.ref("daily/d"+dateSeed()).get().then(function(snap){
+    if(!snap.exists()){cb([]);return;}
+    const rows=[];snap.forEach(function(c){const v=c.val();rows.push({code:c.key.replace(/^c/,''),name:v.name,val:v.score});});
+    rows.sort(function(a,b){return b.val-a.val;});cb(rows.slice(0,50));
+  }).catch(function(){cb(null);});
+}
+
+/* ---- Friend groups ---- */
+function joinGroup(groupCode,cb){
+  if(!cloudReady||!store.user){cb&&cb(false);return;}
+  const g=groupCode.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(g.length<3){cb&&cb(false,"Group code too short.");return;}
+  fbDB.ref("groups/"+g+"/members/c"+myCode()).set({name:myName()}).then(function(){
+    if(!store.groups)store.groups=[];if(store.groups.indexOf(g)<0)store.groups.push(g);saveStore();cb&&cb(true,g);
+  }).catch(function(){cb&&cb(false,"Couldn't join.");});
+}
+function loadGroupBoard(groupCode,mode,cb){
+  if(!cloudReady){cb(null);return;}
+  fbDB.ref("groups/"+groupCode+"/members").get().then(function(snap){
+    if(!snap.exists()){cb([]);return;}
+    const members=[];snap.forEach(function(c){members.push({code:c.key.replace(/^c/,''),name:c.val().name});});
+    // fetch each member's leaderboard value for the mode
+    const promises=members.map(function(m){return fbDB.ref("leaderboard/"+mode+"/c"+m.code).get().then(function(s){return{code:m.code,name:m.name,val:s.exists()?s.val().val:0};}).catch(function(){return{code:m.code,name:m.name,val:0};});});
+    Promise.all(promises).then(function(rows){rows.sort(function(a,b){return b.val-a.val;});cb(rows);});
+  }).catch(function(){cb(null);});
+}
+
+/* ---- Friend challenges ---- */
+function makeChallengeId(){return "ch"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function createChallenge(type,opts,cb){
+  if(!cloudReady||!store.user){cb&&cb(false,"Cloud needed for challenges.");return;}
+  const id=makeChallengeId();
+  const exp=nowTs()+(opts.hours||24)*3600*1000;
+  const rec={from:myCode(),fromName:myName(),type:type,exp:exp,created:nowTs(),results:{}};
+  if(type==="set"){
+    // build a fixed question set (numeric)
+    const n=opts.count||10;const set=[];
+    for(let i=0;i<n;i++){const key=pick(ALL_KEYS);const b=GEN[key].fn(opts.level||3);set.push({q:b.q,a:b.a,label:GEN[key].label,note:b.note,steps:b.steps,trick:b.trick});}
+    rec.questions=set;
+  }else if(type==="streak"){rec.metric="streakDays";rec.myVal=store.streakDays||0;}
+  else if(type==="accuracy"){rec.metric="accuracy";}
+  fbDB.ref("challenges/"+id).set(rec).then(function(){cb&&cb(true,id);}).catch(function(){cb&&cb(false,"Couldn't create.");});
+}
+function loadChallenge(id,cb){
+  if(!cloudReady){cb(null);return;}
+  fbDB.ref("challenges/"+id.trim()).get().then(function(snap){cb(snap.exists()?Object.assign({id:id.trim()},snap.val()):null);}).catch(function(){cb(null);});
+}
+function submitChallengeResult(meta,score,total){
+  if(!cloudReady||!store.user||!meta.id)return;
+  fbDB.ref("challenges/"+meta.id+"/results/c"+myCode()).set({name:myName(),score:score,total:total,ts:nowTs()}).catch(()=>{});
+}
+function submitStreakToChallenge(id,cb){
+  if(!cloudReady||!store.user){cb&&cb(false);return;}
+  fbDB.ref("challenges/"+id+"/results/c"+myCode()).set({name:myName(),score:store.streakDays||0,total:0,ts:nowTs()}).then(function(){cb&&cb(true);}).catch(function(){cb&&cb(false);});
+}
+
+
+/* ============================================================
+   OVERLAY UI — formula cards + social screens
+   ============================================================ */
+function openOverlay(id){document.getElementById(id).classList.remove("hidden");}
+function closeOverlay(id){document.getElementById(id).classList.add("hidden");}
+
+/* ---- Formula cards ---- */
+let formulaFilter="All";
+function openFormulas(){
+  const chips=document.getElementById("formulaTopicChips");chips.innerHTML="";
+  ["All"].concat(FORMULA_TOPICS).forEach(function(t){const b=document.createElement("button");b.className="chip"+(formulaFilter===t?" active":"");b.textContent=t;b.onclick=function(){formulaFilter=t;openFormulas();};chips.appendChild(b);});
+  const list=document.getElementById("formulaList");list.innerHTML="";
+  let lastTopic=null;
+  FORMULAS.filter(function(f){return formulaFilter==="All"||f.topic===formulaFilter;}).forEach(function(f){
+    if(formulaFilter==="All"&&f.topic!==lastTopic){const h=document.createElement("div");h.className="ftopichead";h.textContent=f.topic;list.appendChild(h);lastTopic=f.topic;}
+    const c=document.createElement("div");c.className="fcard";
+    c.innerHTML='<div class="ftop"><span class="fname">'+f.name+'</span><span class="ftopic">'+f.topic+'</span></div><div class="fform">'+f.formula+'</div>'+(f.note?'<div class="fnote">'+f.note+'</div>':'');
+    list.appendChild(c);
+  });
+  openOverlay("formulaScreen");
+}
+
+/* ---- Social ---- */
+function openSocial(){
+  if(!store.user){openLogin();return;}
+  socialTab("global");openOverlay("socialScreen");
+  renderMyGroups();
+}
+function socialTab(tab){
+  document.querySelectorAll("#socialTabs .tabbtn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===tab);});
+  ["global","daily","groups","challenge"].forEach(function(t){document.getElementById("tab-"+t).classList.toggle("hidden",t!==tab);});
+  if(tab==="global")renderGlobal();
+  else if(tab==="daily")renderDaily();
+  else if(tab==="groups")renderMyGroups();
+}
+function boardRows(rows){
+  if(rows===null)return '<p class="panehint">Couldn\'t load — check your connection.</p>';
+  if(rows.length===0)return '<p class="panehint">No entries yet. Be the first!</p>';
+  const mc=myCode();
+  return rows.map(function(r,i){const me=r.code===mc;const rank=i+1;
+    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank'+(rank<=3?' top':'')+'">'+(rank<=3?['🥇','🥈','🥉'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';
+  }).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function renderGlobal(){const mode=document.getElementById("globalMode").value;const el=document.getElementById("globalBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadLeaderboard(mode,function(rows){el.innerHTML=boardRows(rows);});}
+function renderDaily(){const el=document.getElementById("dailyBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadDailyBoard(function(rows){el.innerHTML=boardRows(rows);});}
+function renderMyGroups(){
+  const el=document.getElementById("myGroups");
+  if(!store.groups||store.groups.length===0){el.innerHTML='<p class="panehint">You haven\'t joined a group yet.</p>';document.getElementById("groupBoardControls").style.display="none";document.getElementById("groupBoard").innerHTML="";return;}
+  el.innerHTML=store.groups.map(function(g){return '<button class="chip'+(g===activeGroup?' active':'')+'" onclick="selectGroup(\''+g+'\')">'+g+'</button>';}).join(" ");
+  if(!activeGroup)activeGroup=store.groups[0];
+  document.getElementById("groupBoardControls").style.display="flex";
+  renderGroupBoard();
+}
+let activeGroup=null;
+function selectGroup(g){activeGroup=g;renderMyGroups();}
+function doJoinGroup(){const v=document.getElementById("groupInput").value;joinGroup(v,function(ok,info){if(ok){activeGroup=info;document.getElementById("groupInput").value="";toast("Joined group "+info);renderMyGroups();}else{toast(info||"Couldn't join.");}});}
+function renderGroupBoard(){if(!activeGroup)return;const mode=document.getElementById("groupMode").value;const el=document.getElementById("groupBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadGroupBoard(activeGroup,mode,function(rows){el.innerHTML=boardRows(rows);});}
+
+/* ---- Challenges ---- */
+function createChallengeUI(type){
+  const out=document.getElementById("challengeCreateOut");out.innerHTML='<p class="panehint">Creating…</p>';
+  const opts=type==="set"?{count:10,level:cfg.level||3,hours:48}:{hours:48};
+  createChallenge(type,opts,function(ok,id){
+    if(!ok){out.innerHTML='<p class="panehint">'+(id||"Failed.")+'</p>';return;}
+    const label=type==="set"?"question set":type==="streak"?"streak battle":"accuracy battle";
+    out.innerHTML='<div class="fcard"><div class="fname">Your '+label+' is ready</div><div class="fnote">Share this code with friends (expires in 48h):</div><div class="fform" style="user-select:all;cursor:pointer" onclick="copyText(\''+id+'\')">'+id+'</div><div class="fnote">Tap the code to copy.</div></div>';
+    if(type==="streak"){submitStreakToChallenge(id,function(){});}
+  });
+}
+function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){toast("Copied!");},function(){toast(t);});}else toast(t);}
+function openChallenge(){
+  const id=document.getElementById("challengeInput").value.trim();if(!id){toast("Paste a code first.");return;}
+  const out=document.getElementById("challengeOut");out.innerHTML='<p class="panehint">Loading…</p>';
+  loadChallenge(id,function(ch){
+    if(!ch){out.innerHTML='<p class="panehint">Challenge not found.</p>';return;}
+    if(ch.exp&&nowTs()>ch.exp){out.innerHTML='<p class="panehint">This challenge has expired.</p>';return;}
+    renderChallenge(ch);
+  });
+}
+function renderChallenge(ch){
+  const out=document.getElementById("challengeOut");
+  const results=ch.results||{};
+  const rows=Object.keys(results).map(function(k){return {code:k.replace(/^c/,''),name:results[k].name,val:ch.type==="set"?results[k].score:results[k].score};});
+  rows.sort(function(a,b){return b.val-a.val;});
+  let html='<div class="fcard"><div class="fname">'+escapeHtml(ch.fromName||"A friend")+"'s "+(ch.type==="set"?"question set":ch.type+" battle")+'</div>';
+  if(ch.type==="set"){
+    const played=results["c"+myCode()];
+    if(played)html+='<div class="fnote">You scored '+played.score+'/'+played.total+'.</div>';
+    else html+='<div style="margin-top:8px"><button class="minibtn" onclick="playChallenge(\''+ch.id+'\')">Play this set ('+(ch.questions?ch.questions.length:0)+' Q)</button></div>';
+  }else if(ch.type==="streak"){
+    html+='<div class="fnote">Whoever has the highest day-streak wins.</div>';
+    if(!results["c"+myCode()])html+='<div style="margin-top:8px"><button class="minibtn" onclick="joinStreakBattle(\''+ch.id+'\')">Submit my streak ('+(store.streakDays||0)+')</button></div>';
+  }else{
+    html+='<div class="fnote">Highest quiz accuracy wins — play a quiz, then it auto-submits.</div>';
+  }
+  html+='</div>';
+  if(rows.length){html+='<div class="board">'+rows.map(function(r,i){const me=r.code===myCode();return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank'+(i<3?' top':'')+'">'+(i+1)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';}).join("")+'</div>';}
+  out.innerHTML=html;
+}
+function playChallenge(id){
+  loadChallenge(id,function(ch){
+    if(!ch||!ch.questions){toast("Couldn't load set.");return;}
+    closeOverlay("socialScreen");
+    startChallengeSet({id:ch.id,questions:ch.questions,type:"set",fromName:ch.fromName});
+  });
+}
+function joinStreakBattle(id){submitStreakToChallenge(id,function(ok){if(ok){toast("Streak submitted!");openChallenge();}else toast("Failed.");});}
 
 
 /* ============================================================
