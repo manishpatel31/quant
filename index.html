@@ -327,7 +327,7 @@
   </div>
 
   <div class="tiles">
-    <button class="tile accent-amber" id="dailyTile" onclick="startDaily()">
+    <button class="tile accent-amber" id="dailyTile" onclick="openDailyIntro()">
       <span class="ic">&#9733;</span>
       <span class="tt">Daily challenge</span>
       <span class="ts" id="dailySub">Same 15 for everyone today</span>
@@ -384,23 +384,22 @@
   <div class="pagebody">
     <div class="tabrow" id="lbTabs">
       <button class="tabbtn active" data-tab="global" onclick="lbTab('global')">Global</button>
-      <button class="tabbtn" data-tab="daily" onclick="lbTab('daily')">Daily</button>
       <button class="tabbtn" data-tab="friends" onclick="lbTab('friends')">Friends</button>
       <button class="tabbtn" data-tab="challenge" onclick="lbTab('challenge')">Challenge</button>
     </div>
 
     <div id="lb-global" class="lbpane">
+      <div class="pillrow" id="globalPeriod">
+        <button class="pill active" data-period="all" onclick="setGlobalPeriod('all')">All time</button>
+        <button class="pill" data-period="week" onclick="setGlobalPeriod('week')">This week</button>
+      </div>
       <div class="pillrow" id="globalPills">
-        <button class="pill active" data-mode="quiz" onclick="setGlobalMode('quiz')">Accuracy</button>
-        <button class="pill" data-mode="speed" onclick="setGlobalMode('speed')">Speed</button>
-        <button class="pill" data-mode="mock" onclick="setGlobalMode('mock')">Mock</button>
+        <button class="pill active" data-metric="quiz" onclick="setGlobalMetric('quiz')">Accuracy</button>
+        <button class="pill" data-metric="speed" onclick="setGlobalMetric('speed')">Speed</button>
+        <button class="pill" data-metric="total" onclick="setGlobalMetric('total')">Total questions</button>
+        <button class="pill" data-metric="streak" onclick="setGlobalMetric('streak')">Streak</button>
       </div>
       <div id="globalBoard" class="board"></div>
-    </div>
-
-    <div id="lb-daily" class="lbpane hidden">
-      <p class="panehint">Today's challenge score — same 15 questions for everyone.</p>
-      <div id="dailyBoard" class="board"></div>
     </div>
 
     <div id="lb-friends" class="lbpane hidden">
@@ -410,10 +409,15 @@
         <button class="minibtn" onclick="doJoinGroup()">Join</button>
       </div>
       <div id="myGroups" style="margin:14px 0 6px"></div>
+      <div class="pillrow" id="groupPeriod" style="display:none">
+        <button class="pill active" data-period="all" onclick="setGroupPeriod('all')">All time</button>
+        <button class="pill" data-period="week" onclick="setGroupPeriod('week')">This week</button>
+      </div>
       <div class="pillrow" id="groupPills" style="display:none">
-        <button class="pill active" data-mode="quiz" onclick="setGroupMode('quiz')">Accuracy</button>
-        <button class="pill" data-mode="speed" onclick="setGroupMode('speed')">Speed</button>
-        <button class="pill" data-mode="mock" onclick="setGroupMode('mock')">Mock</button>
+        <button class="pill active" data-metric="quiz" onclick="setGroupMetric('quiz')">Accuracy</button>
+        <button class="pill" data-metric="speed" onclick="setGroupMetric('speed')">Speed</button>
+        <button class="pill" data-metric="total" onclick="setGroupMetric('total')">Total questions</button>
+        <button class="pill" data-metric="streak" onclick="setGroupMetric('streak')">Streak</button>
       </div>
       <div id="groupBoard" class="board"></div>
     </div>
@@ -570,6 +574,16 @@
 <div id="confetti"></div>
 
 <!-- ================= LOGIN MODAL ================= -->
+<!-- ================= DAILY CHALLENGE INTRO ================= -->
+<div id="dailyIntro" class="modal hidden">
+  <div class="modalcard">
+    <h3>Daily challenge</h3>
+    <div id="dailyIntroBody"></div>
+    <button class="primary" id="dailyIntroStart" onclick="startDailyConfirmed()">Start</button>
+    <button class="ghostbtn" onclick="closeDailyIntro()">Close</button>
+  </div>
+</div>
+
 <div id="loginModal" class="modal hidden">
   <div class="modalcard">
     <button class="pageback hidden" id="loginBack" onclick="loginReset()" style="margin-bottom:10px">&#8592;</button>
@@ -845,7 +859,7 @@ let fbDB=null, cloudReady=false;
 const LS_KEY="quant_v3";
 const APP_EPOCH=1735689600000;
 function nowTs(){const t=Date.now();return (t<APP_EPOCH||t>APP_EPOCH+50*365*24*3600*1000)?APP_EPOCH:t;}
-function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0, sr:{}, groups:[], dailyDone:null};}
+function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0, sr:{}, groups:[], dailyDone:null, totalQuestions:0, weekTotal:0, weekKeyStored:null};}
 function loadStore(){try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s)return Object.assign(blankStore(),s);}catch(e){}return blankStore();}
 function saveStore(){store.updatedAt=nowTs();try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}if(cloudReady&&store.user&&!suppressPush)pushCloud();}
 let suppressPush=false;
@@ -872,8 +886,8 @@ function initCloud(cb){
   });
 }
 function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
-function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null};try{fbDB.ref("users/"+k).set(payload).catch(()=>{});}catch(e){}}
-function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;store.sr=d.sr||{};store.groups=d.groups||[];store.dailyDone=d.dailyDone||null;}
+function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null,totalQuestions:store.totalQuestions||0,weekTotal:store.weekTotal||0,weekKeyStored:store.weekKeyStored||null};try{fbDB.ref("users/"+k).set(payload).catch(()=>{});}catch(e){}}
+function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;store.sr=d.sr||{};store.groups=d.groups||[];store.dailyDone=d.dailyDone||null;store.totalQuestions=d.totalQuestions||0;store.weekTotal=d.weekTotal||0;store.weekKeyStored=d.weekKeyStored||null;}
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
   const k=userKey();if(!k){cb&&cb(false);return;}
@@ -903,7 +917,11 @@ function setCloudPill(on,txt){const p=document.getElementById("cloudPill");if(!p
 const DAILY_GOAL_C=DAILY_GOAL;
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function rollDay(){const t=todayStr();if(store.todayDate!==t){store.todayDate=t;store.todayCount=0;}}
-function recordActivity(n){rollDay();const t=todayStr();const before=store.todayCount;store.todayCount+=n;if(before===0&&store.todayCount>0){const y=new Date();y.setDate(y.getDate()-1);const ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();if(store.lastDay===ys)store.streakDays=(store.streakDays||0)+1;else if(store.lastDay!==t)store.streakDays=1;store.lastDay=t;}saveStore();}
+function weekKey(){const d=new Date();const day=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-day);return mon.getFullYear()+"-"+(mon.getMonth()+1)+"-"+mon.getDate();}
+function rollWeek(){const wk=weekKey();if(store.weekKeyStored!==wk){store.weekKeyStored=wk;store.weekTotal=0;}}
+function recordActivity(n){rollDay();const t=todayStr();const before=store.todayCount;store.todayCount+=n;if(before===0&&store.todayCount>0){const y=new Date();y.setDate(y.getDate()-1);const ys=y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();if(store.lastDay===ys)store.streakDays=(store.streakDays||0)+1;else if(store.lastDay!==t)store.streakDays=1;store.lastDay=t;}
+  store.totalQuestions=(store.totalQuestions||0)+n;rollWeek();store.weekTotal=(store.weekTotal||0)+n;
+  saveStore();}
 
 /* ---- config ---- */
 const MODES=[
@@ -970,10 +988,10 @@ function closePage(id){document.getElementById(id).classList.add("hidden");}
 function goHome(){clearTimer();clearQt();["wizard","leaderboard","analysis","testDetail","formulaScreen"].forEach(function(p){document.getElementById(p).classList.add("hidden");});renderHome();show("home");}
 
 /* ---- Leaderboard page ---- */
-function openLeaderboard(){if(!store.user){openLogin();return;}lbTab("global");openPage("leaderboard");renderMyGroups();}
+function openLeaderboard(){if(!store.user){openLogin();return;}navGuard();lbTab("global");openPage("leaderboard");renderMyGroups();}
 
 /* ---- Analysis page ---- */
-function openAnalysis(){renderChart();renderMastery();renderRecent();const has=(store.history&&store.history.length>0);document.getElementById("analysisEmpty").classList.toggle("hidden",has);openPage("analysis");}
+function openAnalysis(){navGuard();renderChart();renderMastery();renderRecent();const has=(store.history&&store.history.length>0);document.getElementById("analysisEmpty").classList.toggle("hidden",has);openPage("analysis");}
 function renderMastery(){const box=document.getElementById("analysisMasteryBox"),list=document.getElementById("masteryList");
   const keys=Object.keys(store.mastery).filter(k=>store.mastery[k].total>=3&&GEN[k]);
   if(keys.length===0){box.classList.add("hidden");return;}box.classList.remove("hidden");list.innerHTML="";
@@ -1006,6 +1024,7 @@ function renderChart(){const box=document.getElementById("analysisChartBox"),svg
 /* ---- Test detail (full per-question analysis) ---- */
 function openTestDetail(historyIdx){
   const h=store.history[historyIdx];if(!h||!h.attempts){toast("No detailed data for this test.");return;}
+  navGuard();
   const tot=h.total,acc=Math.round(h.correct/tot*100);
   document.getElementById("tdEyebrow").textContent=h.mode+(h.when?" \u00b7 "+timeAgo(h.when):"");
   document.getElementById("tdBig").textContent=h.mode==="speed"?h.correct:acc+"%";
@@ -1051,6 +1070,7 @@ function wizInit(purpose){
 }
 function openWizard(purpose){
   wizInit(purpose);
+  navGuard();
   document.getElementById("wizTitle").textContent=purpose==="challenge_set"?"Create a question set":"Set up practice";
   document.getElementById("wizNextBtn").textContent="Next";
   goHomeNoRender();openPage("wizard");wizRender();
@@ -1179,6 +1199,7 @@ let lastWrong=null;
 
 function launch(){
   const timer=run.timer;
+  navGuard();
   document.getElementById("accWrap").classList.toggle("hidden",run.mode==="speed");
   document.getElementById("scoreWrap").classList.toggle("hidden",!run.neg);
   const noAdapt=(run.mode==="pyq"||run.mode==="redo"||run.mode==="formula"||run.mode==="daily"||run.mode==="sr"||run.mode==="challenge");
@@ -1296,11 +1317,17 @@ function endSession(){
     const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:acc);
     let isBest=false;if(!store.best)store.best={};if(store.best[bkey]==null||bval>store.best[bkey]){if(store.history.length>1||store.best[bkey]!=null)isBest=(store.best[bkey]!=null);store.best[bkey]=bval;}
     run._isBest=isBest;run._avgT=avgT;run._acc=acc;
-    if(run.mode==="daily"){store.dailyDone=dateSeed();store.dailyScore=run.correct;if(cloudReady){try{submitDaily(run.correct);}catch(e){}}}
+    if(run.mode==="daily"){
+      store.dailyDone=dateSeed();store.dailyScore=run.correct;
+      const qpm=avgT>0?Math.round((60/avgT)*10)/10:run.correct;
+      run._dailyAcc=acc;run._dailyQpm=qpm;
+      if(cloudReady){try{submitDaily(run.correct,acc,qpm);}catch(e){}}
+    }
     if(cloudReady&&(run.mode==="quiz"||run.mode==="speed"||run.mode==="mock")){try{submitLeaderboard(run.mode,bval);}catch(e){}}
     if(run.mode==="challenge"&&run.challengeMeta){run._challengeResult={score:run.correct,total:tot};if(cloudReady){try{submitChallengeResult(run.challengeMeta,run.correct,tot);}catch(e){}}}
     lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick,isText:a.isText,mcqOptions:a.mcqOptions}));
     recordActivity(tot);
+    if(cloudReady){try{submitTotalQuestions();}catch(e){}try{submitStreakStat();}catch(e){}}
   }catch(e){
     // never let an unexpected error (cloud, storage, anything) trap the user on a frozen screen
     run._isBest=run._isBest||false;run._avgT=run._avgT||0;run._acc=run._acc||0;
@@ -1328,6 +1355,9 @@ function renderResults(){
   document.getElementById("rFullAnalysisBtn").classList.toggle("hidden",!hasAttempts);
   const cb=document.getElementById("rChallengeBox");
   if(run._challengeResult)cb.innerHTML='<div class="fcard"><div class="fname">Challenge result submitted</div><div class="fnote">You scored '+run._challengeResult.score+'/'+run._challengeResult.total+'. Check the leaderboard to see how you rank.</div></div>';
+  else if(mode==="daily"){cb.innerHTML='<div class="fcard"><div class="fname">Today\u2019s challenge \u2014 you</div><div class="fnote">Accuracy '+(run._dailyAcc!=null?run._dailyAcc+"%":"\u2014")+' \u00b7 Score '+run.correct+'/'+tot+' \u00b7 Speed '+(run._dailyQpm!=null?run._dailyQpm+" q/min":"\u2014")+'</div></div><div id="rDailyBoard" class="board" style="margin-top:10px"><p class="panehint">Loading today\u2019s leaderboard\u2026</p></div>';
+    if(cloudReady){try{loadDailyBoardFull(function(rows){const el=document.getElementById("rDailyBoard");if(el)el.innerHTML=dailyBoardRows(rows);});}catch(e){}}
+  }
   else cb.innerHTML="";
   const byTopic={};run.attempts.forEach(function(a){const L=a.label||"Other";if(!byTopic[L])byTopic[L]={c:0,t:0};byTopic[L].t++;if(a.ok)byTopic[L].c++;});
   const tks=Object.keys(byTopic);const tb=document.getElementById("topicBody");tb.innerHTML="";
@@ -1355,6 +1385,7 @@ function againSession(){
 /* ============================================================ LOGIN ============ */
 let loginState={step:"code",code:null,knownName:null};
 function openLogin(){
+  navGuard();
   document.getElementById("loginModal").classList.remove("hidden");
   loginReset();
   if(store.user){document.getElementById("loginCode").value=store.user.code;}
@@ -1447,6 +1478,53 @@ function closeLogin(){document.getElementById("loginModal").classList.add("hidde
 function updateWho(){document.getElementById("whoLabel").textContent=store.user?store.user.name:"";}
 function switchUser(){openLogin();}
 
+/* ---- back-button navigation guard ----
+   Pressing hardware/software back on a phone or the browser's back arrow
+   would otherwise leave the app entirely, since it's a single-page app
+   with no history entries of its own. Every time we open a page, the
+   wizard, an active session, or the login modal, we push one history
+   entry; on popstate we close whatever is currently topmost instead of
+   letting the browser navigate away. ---- */
+function navGuard(){try{history.pushState({navApp:true},"",location.href);}catch(e){}}
+window.addEventListener("popstate",function(){
+  if(!document.getElementById("engine").classList.contains("hidden")){endSession();return;}
+  if(!document.getElementById("wizard").classList.contains("hidden")){
+    wizBackOrClose();
+    if(!document.getElementById("wizard").classList.contains("hidden"))navGuard();
+    return;
+  }
+  if(!document.getElementById("testDetail").classList.contains("hidden")){closePage("testDetail");return;}
+  if(!document.getElementById("formulaScreen").classList.contains("hidden")){closePage("formulaScreen");return;}
+  if(!document.getElementById("analysis").classList.contains("hidden")){closePage("analysis");return;}
+  if(!document.getElementById("leaderboard").classList.contains("hidden")){closePage("leaderboard");return;}
+  const di=document.getElementById("dailyIntro");
+  if(di&&!di.classList.contains("hidden")){di.classList.add("hidden");return;}
+  if(!document.getElementById("loginModal").classList.contains("hidden")){closeLogin();return;}
+  if(!document.getElementById("results").classList.contains("hidden")){goHome();return;}
+});
+
+/* ---- Daily challenge intro / rules screen ---- */
+function openDailyIntro(){
+  navGuard();
+  const body=document.getElementById("dailyIntroBody");
+  if(dailyDoneToday()){
+    const acc=(typeof run!=="undefined"&&run&&run._dailyAcc!=null)?run._dailyAcc:null;
+    body.innerHTML='<p>You\u2019ve already completed today\u2019s challenge \u2014 one attempt per day, same 15 questions for everyone.</p>'+
+      '<div class="fcard"><div class="fname">Your score today</div><div class="fnote">'+(store.dailyScore!=null?store.dailyScore+"/15 correct":"\u2014")+'</div></div>'+
+      '<div id="dailyIntroBoard" class="board" style="margin-top:10px"><p class="panehint">Loading today\u2019s leaderboard\u2026</p></div>';
+    document.getElementById("dailyIntroStart").classList.add("hidden");
+    if(cloudReady){try{loadDailyBoardFull(function(rows){const el=document.getElementById("dailyIntroBoard");if(el)el.innerHTML=dailyBoardRows(rows);});}catch(e){}}
+  }else{
+    body.innerHTML='<p>15 questions, exactly the same set for every player today.</p>'+
+      '<p>You get <b>one attempt</b> \u2014 there\u2019s no redo once you start, so make sure you\u2019re ready.</p>'+
+      '<p>Your accuracy, score and speed all count toward today\u2019s leaderboard.</p>';
+    document.getElementById("dailyIntroStart").classList.remove("hidden");
+  }
+  document.getElementById("dailyIntro").classList.remove("hidden");
+}
+function closeDailyIntro(){document.getElementById("dailyIntro").classList.add("hidden");}
+function startDailyConfirmed(){closeDailyIntro();startDaily();}
+
 /* ---- keyboard shortcuts ---- */
 document.addEventListener("keydown",function(e){
   if(document.getElementById("engine").classList.contains("hidden"))return;
@@ -1523,6 +1601,7 @@ function startSR(){
   launch();
 }
 function startDaily(){
+  if(dailyDoneToday()){toast("You've already completed today's challenge.");openDailyIntro();return;}
   const set=buildDailySet();
   run=baseRun({mode:"daily",keys:[],total:set.length,timer:null,timeLeft:null,pyqPool:null,fixedList:set,adaptive:false,level:3,mcq:false});
   launch();
@@ -1542,47 +1621,67 @@ function toast(msg){let t=document.getElementById("toast");if(!t){t=document.cre
 
 
 /* ============================================================
-   SOCIAL — leaderboards, daily challenge board, friend challenges.
+   SOCIAL — leaderboards, daily challenge, friend challenges.
    Firebase paths:
-     leaderboard/{mode}/{code} = {name, val, ts}
-     daily/{dateSeed}/{code}   = {name, score, ts}
-     groups/{groupCode}/members/{code} = {name}
-     challenges/{challengeId}  = {from, fromName, type, questions?, exp, results/{code}:{name,score,total}}
-   All guarded by cloudReady. Code-only identity (as chosen).
+     leaderboard/{metric}/{code}              = {name, val, ts}      (all-time)
+     leaderboard_week/{weekKey}/{metric}/{code} = {name, val, ts}    (this week)
+     daily/{dateSeed}/{code}                  = {name, score, total, acc, speed, ts}
+     groups/{groupCode}/members/{code}        = {name}
+     challenges/{challengeId}                 = {from, fromName, type, questions?, exp, results/{code}:{name,score,total}}
+   metric \u2208 {quiz(=accuracy), speed, total, streak}. All guarded by cloudReady.
    ============================================================ */
 function myCode(){return store.user?store.user.code:null;}
 function myName(){return store.user?store.user.name:"Anon";}
 
-/* ---- Leaderboard ---- */
-function submitLeaderboard(mode,val){
+/* ---- Leaderboard: best-value metrics (accuracy/speed), all-time + weekly ---- */
+function submitLeaderboard(metric,val){
   if(!cloudReady||!store.user)return;
   try{
     const code=myCode();
-    const ref=fbDB.ref("leaderboard/"+mode+"/c"+code);
-    ref.get().then(function(snap){
+    const allRef=fbDB.ref("leaderboard/"+metric+"/c"+code);
+    allRef.get().then(function(snap){
       const prev=snap.exists()?snap.val():null;
-      if(!prev||val>prev.val){try{ref.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}catch(e){}}
+      if(!prev||val>prev.val){try{allRef.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}catch(e){}}
+    }).catch(()=>{});
+    const wkRef=fbDB.ref("leaderboard_week/"+weekKey()+"/"+metric+"/c"+code);
+    wkRef.get().then(function(snap){
+      const prev=snap.exists()?snap.val():null;
+      if(!prev||val>prev.val){try{wkRef.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}catch(e){}}
     }).catch(()=>{});
   }catch(e){}
 }
-function submitDaily(score){
+/* ---- Cumulative metrics: total questions, streak ---- */
+function submitTotalQuestions(){
   if(!cloudReady||!store.user)return;
-  try{fbDB.ref("daily/d"+dateSeed()+"/c"+myCode()).set({name:myName(),score:score,ts:nowTs()}).catch(()=>{});}catch(e){}
+  const code=myCode();
+  try{fbDB.ref("leaderboard/total/c"+code).set({name:myName(),val:store.totalQuestions||0,ts:nowTs()}).catch(()=>{});}catch(e){}
+  try{fbDB.ref("leaderboard_week/"+weekKey()+"/total/c"+code).set({name:myName(),val:store.weekTotal||0,ts:nowTs()}).catch(()=>{});}catch(e){}
 }
-function loadLeaderboard(mode,cb){
+function submitStreakStat(){
+  if(!cloudReady||!store.user)return;
+  const code=myCode();
+  try{fbDB.ref("leaderboard/streak/c"+code).set({name:myName(),val:store.streakDays||0,ts:nowTs()}).catch(()=>{});}catch(e){}
+}
+function submitDaily(score,acc,speed){
+  if(!cloudReady||!store.user)return;
+  try{fbDB.ref("daily/d"+dateSeed()+"/c"+myCode()).set({name:myName(),score:score,total:15,acc:acc||0,speed:speed||0,ts:nowTs()}).catch(()=>{});}catch(e){}
+}
+function loadLeaderboard(metric,period,cb){
   if(!cloudReady){cb(null);return;}
-  fbDB.ref("leaderboard/"+mode).get().then(function(snap){
+  const path=(metric==="streak"||period!=="week")?("leaderboard/"+metric):("leaderboard_week/"+weekKey()+"/"+metric);
+  fbDB.ref(path).get().then(function(snap){
     if(!snap.exists()){cb([]);return;}
     const rows=[];snap.forEach(function(c){const v=c.val();rows.push({code:c.key.replace(/^c/,''),name:v.name,val:v.val});});
     rows.sort(function(a,b){return b.val-a.val;});cb(rows.slice(0,50));
   }).catch(function(){cb(null);});
 }
-function loadDailyBoard(cb){
+function loadDailyBoardFull(cb){
   if(!cloudReady){cb(null);return;}
   fbDB.ref("daily/d"+dateSeed()).get().then(function(snap){
     if(!snap.exists()){cb([]);return;}
-    const rows=[];snap.forEach(function(c){const v=c.val();rows.push({code:c.key.replace(/^c/,''),name:v.name,val:v.score});});
-    rows.sort(function(a,b){return b.val-a.val;});cb(rows.slice(0,50));
+    const rows=[];snap.forEach(function(c){const v=c.val();rows.push({code:c.key.replace(/^c/,''),name:v.name,score:v.score,total:v.total||15,acc:v.acc||0,speed:v.speed||0});});
+    rows.sort(function(a,b){return b.score-a.score;});
+    cb(rows.slice(0,50));
   }).catch(function(){cb(null);});
 }
 
@@ -1595,13 +1694,13 @@ function joinGroup(groupCode,cb){
     if(!store.groups)store.groups=[];if(store.groups.indexOf(g)<0)store.groups.push(g);saveStore();cb&&cb(true,g);
   }).catch(function(){cb&&cb(false,"Couldn't join.");});
 }
-function loadGroupBoard(groupCode,mode,cb){
+function loadGroupBoard(groupCode,metric,period,cb){
   if(!cloudReady){cb(null);return;}
   fbDB.ref("groups/"+groupCode+"/members").get().then(function(snap){
     if(!snap.exists()){cb([]);return;}
     const members=[];snap.forEach(function(c){members.push({code:c.key.replace(/^c/,''),name:c.val().name});});
-    // fetch each member's leaderboard value for the mode
-    const promises=members.map(function(m){return fbDB.ref("leaderboard/"+mode+"/c"+m.code).get().then(function(s){return{code:m.code,name:m.name,val:s.exists()?s.val().val:0};}).catch(function(){return{code:m.code,name:m.name,val:0};});});
+    const path=(metric==="streak"||period!=="week")?("leaderboard/"+metric):("leaderboard_week/"+weekKey()+"/"+metric);
+    const promises=members.map(function(m){return fbDB.ref(path+"/c"+m.code).get().then(function(s){return{code:m.code,name:m.name,val:s.exists()?s.val().val:0};}).catch(function(){return{code:m.code,name:m.name,val:0};});});
     Promise.all(promises).then(function(rows){rows.sort(function(a,b){return b.val-a.val;});cb(rows);});
   }).catch(function(){cb(null);});
 }
@@ -1647,6 +1746,7 @@ function submitStreakToChallenge(id,cb){
    ============================================================ */
 let formulaFilter="All";
 function openFormulas(){
+  if(document.getElementById("formulaScreen").classList.contains("hidden"))navGuard();
   const chips=document.getElementById("formulaTopicChips");chips.innerHTML="";
   ["All"].concat(FORMULA_TOPICS).forEach(function(t){const b=document.createElement("button");b.className="chip"+(formulaFilter===t?" active":"");b.textContent=t;b.onclick=function(){formulaFilter=t;openFormulas();};chips.appendChild(b);});
   const list=document.getElementById("formulaList");list.innerHTML="";
@@ -1661,44 +1761,55 @@ function openFormulas(){
 }
 
 /* ============================================================
-   LEADERBOARD PAGE — tabs + pills
+   LEADERBOARD PAGE — tabs + metric pills + period toggle
    ============================================================ */
-let lbState={tab:"global",globalMode:"quiz",groupMode:"quiz"};
+const METRIC_UNIT={quiz:"%",speed:" q/min",total:" Qs",streak:" \ud83d\udd25"};
+function fmtMetric(metric,val){return val+(METRIC_UNIT[metric]||"");}
+let lbState={tab:"global",globalMetric:"quiz",globalPeriod:"all",groupMetric:"quiz",groupPeriod:"all"};
 function lbTab(tab){
   lbState.tab=tab;
   document.querySelectorAll("#lbTabs .tabbtn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===tab);});
-  ["global","daily","friends","challenge"].forEach(function(t){document.getElementById("lb-"+t).classList.toggle("hidden",t!==tab);});
+  ["global","friends","challenge"].forEach(function(t){document.getElementById("lb-"+t).classList.toggle("hidden",t!==tab);});
   if(tab==="global")renderGlobal();
-  else if(tab==="daily")renderDaily();
   else if(tab==="friends")renderMyGroups();
 }
-function boardRows(rows){
+function boardRows(rows,metric){
   if(rows===null)return '<p class="panehint">Couldn\'t load \u2014 check your connection.</p>';
   if(rows.length===0)return '<p class="panehint">No entries yet. Be the first!</p>';
   const mc=myCode();
   return rows.map(function(r,i){const me=r.code===mc;const rank=i+1;
-    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank">'+(rank<=3?['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';
+    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank">'+(rank<=3?['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+fmtMetric(metric,r.val)+'</span></div>';
+  }).join("");
+}
+function dailyBoardRows(rows){
+  if(rows===null)return '<p class="panehint">Couldn\'t load \u2014 check your connection.</p>';
+  if(rows.length===0)return '<p class="panehint">No entries yet today. Be the first!</p>';
+  const mc=myCode();
+  return rows.map(function(r,i){const me=r.code===mc;const rank=i+1;
+    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank">'+(rank<=3?['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval" style="text-align:right;font-size:12px;line-height:1.5">'+r.score+'/'+r.total+'<br><span style="color:var(--muted);font-weight:500">'+r.acc+'% \u00b7 '+r.speed+' q/min</span></span></div>';
   }).join("");
 }
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 
-function setGlobalMode(mode){lbState.globalMode=mode;document.querySelectorAll("#globalPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-mode")===mode);});renderGlobal();}
-function renderGlobal(){const el=document.getElementById("globalBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadLeaderboard(lbState.globalMode,function(rows){el.innerHTML=boardRows(rows);});}
-function renderDaily(){const el=document.getElementById("dailyBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadDailyBoard(function(rows){el.innerHTML=boardRows(rows);});}
+function setGlobalMetric(metric){lbState.globalMetric=metric;document.querySelectorAll("#globalPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-metric")===metric);});renderGlobal();}
+function setGlobalPeriod(period){lbState.globalPeriod=period;document.querySelectorAll("#globalPeriod .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-period")===period);});renderGlobal();}
+function renderGlobal(){const el=document.getElementById("globalBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadLeaderboard(lbState.globalMetric,lbState.globalPeriod,function(rows){el.innerHTML=boardRows(rows,lbState.globalMetric);});}
 
 let activeGroup=null;
 function renderMyGroups(){
   const el=document.getElementById("myGroups");
-  if(!store.groups||store.groups.length===0){el.innerHTML='<p class="panehint">You haven\'t joined a group yet.</p>';document.getElementById("groupPills").style.display="none";document.getElementById("groupBoard").innerHTML="";return;}
+  if(!store.groups||store.groups.length===0){el.innerHTML='<p class="panehint">You haven\'t joined a group yet.</p>';document.getElementById("groupPills").style.display="none";document.getElementById("groupPeriod").style.display="none";document.getElementById("groupBoard").innerHTML="";return;}
   el.innerHTML=store.groups.map(function(g){return '<button type="button" class="chip'+(g===activeGroup?' active':'')+'" onclick="selectGroup(\''+g+'\')" style="margin-right:6px;margin-bottom:6px">'+g+'</button>';}).join(" ");
   if(!activeGroup)activeGroup=store.groups[0];
   document.getElementById("groupPills").style.display="flex";
+  document.getElementById("groupPeriod").style.display="flex";
   renderGroupBoard();
 }
 function selectGroup(g){activeGroup=g;renderMyGroups();}
 function doJoinGroup(){const v=document.getElementById("groupInput").value;joinGroup(v,function(ok,info){if(ok){activeGroup=info;document.getElementById("groupInput").value="";toast("Joined group "+info);renderMyGroups();}else{toast(info||"Couldn't join.");}});}
-function setGroupMode(mode){lbState.groupMode=mode;document.querySelectorAll("#groupPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-mode")===mode);});renderGroupBoard();}
-function renderGroupBoard(){if(!activeGroup)return;const el=document.getElementById("groupBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadGroupBoard(activeGroup,lbState.groupMode,function(rows){el.innerHTML=boardRows(rows);});}
+function setGroupMetric(metric){lbState.groupMetric=metric;document.querySelectorAll("#groupPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-metric")===metric);});renderGroupBoard();}
+function setGroupPeriod(period){lbState.groupPeriod=period;document.querySelectorAll("#groupPeriod .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-period")===period);});renderGroupBoard();}
+function renderGroupBoard(){if(!activeGroup)return;const el=document.getElementById("groupBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadGroupBoard(activeGroup,lbState.groupMetric,lbState.groupPeriod,function(rows){el.innerHTML=boardRows(rows,lbState.groupMetric);});}
 
 /* ============================================================
    CHALLENGES — 6-digit codes
