@@ -7,98 +7,142 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
   :root{
-    --ink:#0d1b2a; --paper:#fbf7f0; --panel:#ffffff; --line:#e4ddd0;
-    --teal:#0f766e; --tealDeep:#134e4a; --amber:#e0a53d; --coral:#d96248;
-    --green:#2f9e60; --red:#cf4b3a; --muted:#6b7280; --accent2:#5b6cff;
+    --ink:#111c26; --paper:#f7f4ee; --panel:#ffffff; --panel2:#f2eee6; --line:#e6e0d5;
+    --teal:#0e7c72; --tealDeep:#0c5c54; --amber:#dd9e33; --coral:#d75f45;
+    --green:#2f9e60; --red:#cf4b3a; --muted:#6d7680; --accent2:#5566e6;
+    --shadow:0 1px 3px rgba(20,30,40,.05), 0 6px 24px rgba(20,30,40,.04);
+    --shadow2:0 2px 8px rgba(20,30,40,.08), 0 12px 40px rgba(20,30,40,.08);
+    --r:18px;
   }
   [data-theme="dark"]{
-    --ink:#e8eef2; --paper:#0e1720; --panel:#16232e; --line:#2a3b47;
-    --teal:#3fb8ac; --tealDeep:#3fb8ac; --amber:#e6b455; --coral:#e57c62;
-    --green:#4ec38a; --red:#f0705c; --muted:#8ea3af; --accent2:#8b97ff;
+    --ink:#eaf0f4; --paper:#0c141b; --panel:#141f28; --panel2:#1a2731; --line:#28363f;
+    --teal:#3fbcb0; --tealDeep:#3fbcb0; --amber:#e6b455; --coral:#e57c62;
+    --green:#4ec38a; --red:#f0705c; --muted:#8b9aa5; --accent2:#8b97ff;
+    --shadow:0 1px 3px rgba(0,0,0,.3), 0 6px 24px rgba(0,0,0,.25);
+    --shadow2:0 2px 8px rgba(0,0,0,.4), 0 12px 40px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{background:var(--paper); color:var(--ink); font-family:'DM Sans',system-ui,sans-serif; min-height:100vh; transition:background .3s,color .3s; -webkit-tap-highlight-color:transparent;}
-  button{font-family:inherit}
-  button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+  body{background:var(--paper); color:var(--ink); font-family:'DM Sans',system-ui,sans-serif; min-height:100vh; transition:background .3s,color .3s; -webkit-tap-highlight-color:transparent; overflow-x:hidden}
+  button{font-family:inherit; cursor:pointer}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
   input:focus-visible{outline:none}
-  @keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+  @keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-  @keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
   @keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
-  header{border-bottom:1px solid var(--line); padding:16px 18px 13px; max-width:780px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;}
-  .brand{cursor:pointer; display:flex; align-items:baseline; gap:10px}
-  .brand h1{font-family:'Fraunces',serif; font-weight:700; font-size:25px; letter-spacing:-.02em; margin:0}
-  .brand .tag{font-family:'DM Mono',monospace; font-size:10px; color:var(--teal); letter-spacing:.12em; text-transform:uppercase}
-  .headright{display:flex; align-items:center; gap:10px}
-  .who{font-size:12px; color:var(--muted); font-weight:600; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .iconbtn{background:none;border:1px solid var(--line);color:var(--muted);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:15px;flex-shrink:0}
-  .homebtn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-weight:600}
-  .wrap{max-width:780px; margin:0 auto; padding:0 18px 80px}
+
+  header{padding:18px 20px 12px; max-width:640px; margin:0 auto; display:flex; align-items:center; justify-content:space-between}
+  .brand{display:flex; align-items:baseline; gap:9px; cursor:pointer}
+  .brand h1{font-family:'Fraunces',serif; font-weight:700; font-size:24px; letter-spacing:-.02em; margin:0}
+  .brand .tag{font-family:'DM Mono',monospace; font-size:10px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase}
+  .headright{display:flex; align-items:center; gap:9px}
+  .who{font-size:12px; color:var(--muted); font-weight:600; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer}
+  .iconbtn{background:var(--panel);border:1px solid var(--line);color:var(--muted);width:36px;height:36px;border-radius:11px;font-size:15px;flex-shrink:0;transition:transform .12s}
+  .iconbtn:active{transform:scale(.92)}
+  .cloudpill{font-size:9.5px; padding:3px 8px; border-radius:999px; font-weight:700; letter-spacing:.04em; border:1px solid transparent}
+  .cloudpill.on{background:color-mix(in srgb,var(--green) 14%,var(--panel)); color:var(--green)}
+  .cloudpill.off{background:var(--panel2); color:var(--muted)}
+
+  .wrap{max-width:640px; margin:0 auto; padding:0 20px 90px}
   .screen{animation:rise .3s}
-  .hero{padding:22px 0 16px}
-  .hero h2{font-family:'Fraunces',serif; font-size:clamp(27px,6vw,42px); line-height:1.06; margin:0; font-weight:600; letter-spacing:-.02em}
-  .hero p{color:var(--muted); font-size:14.5px; margin-top:12px; max-width:500px; line-height:1.5}
-  .cardrow{display:flex; gap:12px; margin-bottom:22px; flex-wrap:wrap}
-  .goalbar{flex:1; min-width:230px; display:flex; align-items:center; gap:14px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:13px 15px}
-  .goalbar .gtext{flex:1}
-  .goalbar .gtitle{font-weight:700; font-size:14px}
-  .goalbar .gsub{color:var(--muted); font-size:12px; margin-top:2px}
-  .goalbar .flame{font-size:19px; font-weight:700; color:var(--coral); font-family:'DM Mono',monospace; text-align:center}
-  .goalbar .flabel{font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; text-align:center}
-  .quickcard{min-width:150px; background:var(--tealDeep); color:#fff; border:none; border-radius:14px; padding:14px 16px; text-align:left; cursor:pointer; display:flex; flex-direction:column; justify-content:center; gap:3px}
-  [data-theme="dark"] .quickcard{color:#0e1720}
-  .quickcard .qt{font-weight:700; font-size:15px}
-  .quickcard .qs{font-size:11.5px; opacity:.85}
-  .quickcard:disabled{opacity:.4; cursor:default}
-  .seclabel{display:flex; align-items:baseline; gap:10px; margin-bottom:12px}
-  .seclabel .n{font-family:'DM Mono',monospace; font-size:12px; color:var(--amber); font-weight:500}
-  .seclabel .t{font-weight:700; font-size:14px; letter-spacing:.02em}
-  .seclabel .rule{flex:1; height:1px; background:var(--line)}
-  .modes{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:10px; margin-bottom:24px}
-  .mode{text-align:left; padding:14px 15px; border-radius:14px; border:2px solid var(--line); background:var(--panel); cursor:pointer; transition:all .15s;}
-  .mode.active{border-color:var(--teal); background:color-mix(in srgb, var(--teal) 8%, var(--panel))}
-  .mode .top{display:flex; justify-content:space-between; align-items:center}
-  .mode .name{font-weight:700; font-size:15px}
-  .mode .icon{font-size:17px; color:var(--muted)}
-  .mode.active .icon{color:var(--teal)}
-  .mode .desc{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4}
-  .mode:disabled{opacity:.5; cursor:default}
-  .chip{border:1.5px solid var(--line); background:transparent; color:var(--ink); padding:8px 14px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;}
+
+  .hgreet{padding:14px 0 20px}
+  .hgreet .hi{font-family:'Fraunces',serif; font-size:clamp(26px,7vw,34px); font-weight:600; letter-spacing:-.02em; line-height:1.1}
+  .hgreet .sub{color:var(--muted); font-size:14px; margin-top:6px}
+
+  .streakhero{background:linear-gradient(135deg,var(--tealDeep),var(--teal)); color:#fff; border-radius:var(--r); padding:20px 22px; display:flex; align-items:center; gap:18px; margin-bottom:14px; box-shadow:var(--shadow2); position:relative; overflow:hidden}
+  .streakhero .flamebig{font-size:38px; line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
+  .streakhero .stx{flex:1}
+  .streakhero .sd{font-size:34px; font-weight:700; font-family:'Fraunces',serif; line-height:1}
+  .streakhero .sl{font-size:13px; opacity:.9; margin-top:2px}
+  .streakhero .ring{flex-shrink:0; text-align:center}
+  .streakhero .goaltxt{font-size:11px; opacity:.85; text-align:center; margin-top:3px}
+
+  .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px}
+  .tile{background:var(--panel); border:1px solid var(--line); border-radius:var(--r); padding:16px; text-align:left; box-shadow:var(--shadow); transition:transform .12s,box-shadow .2s; display:flex; flex-direction:column; gap:6px; min-height:92px}
+  .tile:active{transform:scale(.97)}
+  .tile:disabled{opacity:.5}
+  .tile .ic{font-size:20px; width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--panel2)}
+  .tile .tt{font-weight:700; font-size:14.5px; margin-top:2px}
+  .tile .ts{font-size:11.5px; color:var(--muted); line-height:1.35}
+  .tile.accent-amber .ic{background:color-mix(in srgb,var(--amber) 18%,transparent); color:var(--amber)}
+  .tile.accent-coral .ic{background:color-mix(in srgb,var(--coral) 16%,transparent); color:var(--coral)}
+  .tile.accent-teal .ic{background:color-mix(in srgb,var(--teal) 15%,transparent); color:var(--teal)}
+  .tile.accent-violet .ic{background:color-mix(in srgb,var(--accent2) 15%,transparent); color:var(--accent2)}
+
+  .startbtn{width:100%; padding:20px; background:var(--ink); color:var(--paper); border:none; border-radius:var(--r); font-size:18px; font-weight:700; letter-spacing:.01em; box-shadow:var(--shadow2); margin-bottom:14px; transition:transform .12s; display:flex; align-items:center; justify-content:center; gap:10px}
+  .startbtn:active{transform:scale(.98)}
+  .startbtn .ar{font-size:20px}
+
+  .navrow{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .navbtn{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:15px; font-weight:700; font-size:14px; color:var(--ink); box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; gap:8px; transition:transform .12s}
+  .navbtn:active{transform:scale(.97)}
+  .navbtn .ni{font-size:17px}
+
+  .page{position:fixed; inset:0; background:var(--paper); z-index:80; overflow-y:auto; animation:slideIn .28s cubic-bezier(.2,.7,.3,1)}
+  .pagebar{position:sticky; top:0; z-index:5; background:color-mix(in srgb,var(--paper) 92%,transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding:15px 20px; max-width:640px; margin:0 auto; display:flex; align-items:center; gap:14px}
+  .pageback{background:var(--panel); border:1px solid var(--line); width:38px; height:38px; border-radius:11px; font-size:17px; color:var(--ink); flex-shrink:0; display:flex; align-items:center; justify-content:center}
+  .pagetitle{font-family:'Fraunces',serif; font-weight:600; font-size:19px; flex:1}
+  .pagebody{max-width:640px; margin:0 auto; padding:20px 20px 100px}
+
+  .wizprog{display:flex; gap:6px; margin-bottom:22px}
+  .wizprog .seg{flex:1; height:4px; background:var(--line); border-radius:3px; overflow:hidden}
+  .wizprog .seg.on{background:var(--teal)}
+  .wizstep{animation:rise .25s}
+  .wizh{font-family:'Fraunces',serif; font-size:24px; font-weight:600; margin:0 0 4px}
+  .wizsub{color:var(--muted); font-size:13.5px; margin:0 0 20px; line-height:1.5}
+  .modelist{display:flex; flex-direction:column; gap:10px}
+  .modeopt{display:flex; align-items:center; gap:14px; padding:16px; border:2px solid var(--line); border-radius:14px; background:var(--panel); text-align:left; transition:all .14s; width:100%}
+  .modeopt.active{border-color:var(--teal); background:color-mix(in srgb,var(--teal) 6%,var(--panel))}
+  .modeopt .mi{font-size:22px; width:44px; height:44px; border-radius:12px; background:var(--panel2); display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .modeopt.active .mi{background:color-mix(in srgb,var(--teal) 14%,transparent); color:var(--teal)}
+  .modeopt .mtext{flex:1}
+  .modeopt .mn{font-weight:700; font-size:15.5px}
+  .modeopt .md{font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.35}
+  .modeopt .mcheck{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+  .modeopt.active .mcheck{background:var(--teal);border-color:var(--teal)}
+
+  .togglecard{display:flex; align-items:flex-start; gap:12px; padding:15px 16px; border:1.5px solid var(--line); border-radius:13px; background:var(--panel); margin-bottom:10px; cursor:pointer}
+  .togglecard .tinfo{flex:1}
+  .togglecard .tlab{font-weight:700; font-size:14.5px}
+  .togglecard .tdesc{font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4}
+  .switch{position:relative; width:44px; height:26px; flex-shrink:0; margin-top:2px}
+  .switch input{opacity:0; width:0; height:0}
+  .slider{position:absolute; inset:0; background:var(--line); border-radius:999px; transition:.2s}
+  .slider:before{content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .switch input:checked+.slider{background:var(--teal)}
+  .switch input:checked+.slider:before{transform:translateX(18px)}
+  .subfield{margin:-2px 0 14px 4px; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted)}
+  .subfield input{width:66px; padding:8px 10px; border:1.5px solid var(--line); border-radius:9px; background:var(--panel); color:var(--ink); font-family:'DM Mono',monospace; font-size:14px}
+
+  .levelrow{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+  .chip{border:1.5px solid var(--line); background:var(--panel); color:var(--ink); padding:9px 15px; border-radius:999px; font-size:13.5px; font-weight:600; transition:all .14s}
   .chip.active{border-color:var(--teal); background:var(--teal); color:#fff}
-  [data-theme="dark"] .chip.active{color:#0e1720}
-  .toggles{display:flex; flex-wrap:wrap; gap:10px 22px; margin-bottom:16px}
-  .toggles label{display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; font-weight:600}
-  .toggles input{width:16px; height:16px; accent-color:var(--teal)}
-  .customrow{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px}
+  [data-theme="dark"] .chip.active{color:#0c141b}
+  .customrow{display:flex; gap:14px; flex-wrap:wrap; margin:14px 0}
   .customfield{display:flex; flex-direction:column; gap:5px}
   .customfield label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700}
-  .customfield input{width:120px; padding:9px 12px; border:1.5px solid var(--line); border-radius:9px; background:var(--panel); color:var(--ink); font-family:'DM Mono',monospace; font-size:15px}
-  #levelWrap{margin-bottom:24px}
-  #levelChips{display:flex; gap:7px; flex-wrap:wrap}
-  #levelHint{font-size:12px; color:var(--muted); margin-top:8px}
-  .grp{margin-bottom:13px}
-  .grphead{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:none; border:none; cursor:pointer; font-family:'DM Mono',monospace; padding:0; margin-bottom:8px;}
+  .customfield input{width:130px; padding:11px 13px; border:1.5px solid var(--line); border-radius:10px; background:var(--panel); color:var(--ink); font-family:'DM Mono',monospace; font-size:15px}
+
+  .grp{margin-bottom:14px}
+  .grphead{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); background:none; border:none; font-family:'DM Mono',monospace; padding:0; margin-bottom:9px; display:flex; align-items:center; gap:6px}
   .grphead.allon{color:var(--teal)}
   .grpchips{display:flex; flex-wrap:wrap; gap:7px}
-  .primary{width:100%; padding:16px; background:var(--tealDeep); color:#fff; border:none; border-radius:14px; font-size:17px; font-weight:700; cursor:pointer; letter-spacing:.01em;}
-  [data-theme="dark"] .primary{color:#0e1720}
-  .recent{margin-top:28px}
-  .recentrow{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px; font-size:13px; margin-bottom:8px;}
-  .recentrow .m{font-weight:600; text-transform:capitalize}
-  .recentrow .s{color:var(--muted); font-family:'DM Mono',monospace}
-  .masteryrow{display:flex; align-items:center; gap:10px; margin-bottom:7px; font-size:12.5px}
-  .masteryrow .mlab{width:130px; flex-shrink:0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .masteryrow .mbar{flex:1; height:8px; background:var(--line); border-radius:6px; overflow:hidden}
-  .masteryrow .mfill{height:100%; border-radius:6px; transition:width .5s}
-  .masteryrow .mpct{width:60px; text-align:right; font-family:'DM Mono',monospace; color:var(--muted)}
-  /* progress chart */
-  .chartwrap{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:8px}
-  .chartlegend{display:flex; gap:16px; font-size:11.5px; color:var(--muted); margin-top:8px; justify-content:center}
-  .chartlegend span{display:flex; align-items:center; gap:5px}
-  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-  /* engine */
+  .topicactions{display:flex; gap:16px; margin-bottom:16px}
+  .miniaction{font-size:12.5px; font-weight:700; color:var(--teal); background:none; border:none; padding:0}
+
+  .wizfoot{position:fixed; bottom:0; left:0; right:0; background:color-mix(in srgb,var(--paper) 92%,transparent); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:14px 20px calc(14px + env(safe-area-inset-bottom))}
+  .wizfoot .inner{max-width:640px; margin:0 auto; display:flex; gap:12px}
+  .wbtn{flex:1; padding:15px; border-radius:13px; font-size:15px; font-weight:700; border:none}
+  .wbtn.next{background:var(--ink); color:var(--paper)}
+  .wbtn.back{background:var(--panel); border:1.5px solid var(--line); color:var(--ink); flex:0 0 42%}
+  .wbtn:disabled{opacity:.4}
+
   .statusbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-family:'DM Mono',monospace; font-size:13px; flex-wrap:wrap; gap:8px}
   .stat{display:inline-flex; flex-direction:column; line-height:1.1}
   .stat .lab{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em}
@@ -107,341 +151,284 @@
   .statsright{display:flex; gap:14px; align-items:center}
   #timer{font-weight:600; font-size:15px}
   #counter{color:var(--muted)}
-  .progress{height:4px; background:var(--line); border-radius:4px; margin-bottom:12px; overflow:hidden}
+  .progress{height:4px; background:var(--line); border-radius:4px; margin-bottom:14px; overflow:hidden}
   .progress .bar{height:100%; background:var(--teal); transition:width .3s; width:0}
-  /* pace bar for speed */
-  .pacewrap{margin-bottom:18px}
-  .pacebar{height:22px; background:var(--line); border-radius:6px; position:relative; overflow:hidden}
+  .pacewrap{margin-bottom:16px}
+  .pacebar{height:22px; background:var(--line); border-radius:8px; position:relative; overflow:hidden}
   .pacefill{height:100%; background:color-mix(in srgb,var(--teal) 55%,transparent); width:0; transition:width .3s}
   .pacetarget{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--coral)}
   .pacelabel{font-size:11px; color:var(--muted); margin-top:4px; text-align:center; font-family:'DM Mono',monospace}
   .streak{text-align:center; margin-bottom:8px; color:var(--coral); font-weight:700; font-size:13px; animation:pop .2s}
-  .qcard{background:var(--panel); border:2px solid var(--line); border-radius:20px; padding:30px 22px 24px; text-align:center; transition:border-color .2s;}
-  .qcard.right{border-color:var(--green)}
-  .qcard.wrong{border-color:var(--red); animation:shake .3s}
+  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:22px; padding:32px 24px 26px; text-align:center; box-shadow:var(--shadow2); transition:border-color .2s}
+  .qcard.right{border-color:var(--green); border-width:2px}
+  .qcard.wrong{border-color:var(--red); border-width:2px; animation:shake .3s}
   .qcard.fresh{animation:pop .25s}
-  .qkind{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-family:'DM Mono',monospace; margin-bottom:12px}
-  .qtext{font-family:'Fraunces',serif; font-size:clamp(23px,5.5vw,38px); font-weight:600; letter-spacing:-.01em; line-height:1.2}
-  .answerrow{margin-top:22px; display:flex; gap:10px; max-width:340px; margin-left:auto; margin-right:auto}
-  #answer{flex:1; padding:14px 16px; font-size:22px; font-family:'DM Mono',monospace; text-align:center; border:2px solid var(--line); border-radius:12px; background:var(--panel); color:var(--ink); font-weight:500;}
+  .qkind{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-family:'DM Mono',monospace; margin-bottom:14px}
+  .qtext{font-family:'Fraunces',serif; font-size:clamp(24px,6vw,40px); font-weight:600; letter-spacing:-.01em; line-height:1.2}
+  .answerrow{margin-top:24px; display:flex; gap:10px; max-width:340px; margin-left:auto; margin-right:auto}
+  #answer{flex:1; padding:15px 16px; font-size:22px; font-family:'DM Mono',monospace; text-align:center; border:2px solid var(--line); border-radius:13px; background:var(--panel); color:var(--ink); font-weight:500}
   #answer:disabled{opacity:.7}
-  #submitBtn{padding:0 22px; background:var(--tealDeep); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer;}
-  [data-theme="dark"] #submitBtn{color:#0e1720}
-  #submitBtn:disabled{background:var(--line); color:var(--muted); cursor:default}
+  #submitBtn{padding:0 24px; background:var(--ink); color:var(--paper); border:none; border-radius:13px; font-size:16px; font-weight:700}
+  #submitBtn:disabled{background:var(--line); color:var(--muted)}
   .mcqgrid{display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:22px; max-width:440px; margin-left:auto; margin-right:auto}
-  .mcqbtn{padding:18px 14px; border:2px solid var(--line); background:var(--panel); color:var(--ink); border-radius:14px; font-size:20px; font-family:'DM Mono',monospace; font-weight:500; cursor:pointer; transition:all .12s; min-height:60px; display:flex; align-items:center; justify-content:center; gap:8px}
-  .mcqbtn .kbd{font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-family:'DM Mono',monospace}
-  .mcqbtn:hover:not(:disabled){border-color:var(--teal)}
-  .mcqbtn.correct{border-color:var(--green); background:color-mix(in srgb, var(--green) 16%, var(--panel)); color:var(--green); font-weight:700}
-  .mcqbtn.chosenwrong{border-color:var(--red); background:color-mix(in srgb, var(--red) 13%, var(--panel)); color:var(--red)}
-  .mcqbtn:disabled{cursor:default}
+  .mcqbtn{padding:18px 14px; border:2px solid var(--line); background:var(--panel); color:var(--ink); border-radius:14px; font-size:19px; font-family:'DM Mono',monospace; font-weight:500; transition:all .12s; min-height:60px; display:flex; align-items:center; justify-content:center; gap:8px}
+  .mcqbtn .kbd{font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:5px; padding:1px 5px}
+  .mcqbtn:active:not(:disabled){transform:scale(.97)}
+  .mcqbtn.correct{border-color:var(--green); background:color-mix(in srgb,var(--green) 16%,var(--panel)); color:var(--green); font-weight:700}
+  .mcqbtn.chosenwrong{border-color:var(--red); background:color-mix(in srgb,var(--red) 13%,var(--panel)); color:var(--red)}
   .fbline{min-height:24px; margin-top:14px; font-weight:700; font-size:15px}
   .fbline.right{color:var(--green)}
   .fbline.wrong{color:var(--red)}
-  .solbox{margin-top:12px; font-size:13px; background:color-mix(in srgb, var(--amber) 10%, var(--panel)); border:1px solid color-mix(in srgb, var(--amber) 32%, var(--line)); border-radius:12px; padding:12px 14px; text-align:left; line-height:1.6; display:none}
+  .solbox{margin-top:12px; font-size:13px; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; text-align:left; line-height:1.6; display:none}
   .solbox.show{display:block; animation:rise .25s}
   .solbox .sh{font-weight:700; color:var(--amber); font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:5px}
   .solbox .step{font-family:'DM Mono',monospace; font-size:12.5px; padding:2px 0}
   .solbox .step b{color:var(--teal)}
-  .solbox .tr{margin-top:7px; padding-top:7px; border-top:1px dashed color-mix(in srgb,var(--amber) 30%,var(--line)); color:var(--muted)}
+  .solbox .tr{margin-top:7px; padding-top:7px; border-top:1px dashed var(--line); color:var(--muted)}
   .controls{display:flex; justify-content:center; gap:12px; margin-top:18px; flex-wrap:wrap}
-  .ghost{background:none; border:1.5px solid var(--line); color:var(--muted); padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer}
-  /* on-screen keypad (mobile) */
+  .ghost{background:var(--panel); border:1.5px solid var(--line); color:var(--muted); padding:10px 16px; border-radius:11px; font-size:13px; font-weight:600}
   #keypad{display:none; max-width:340px; margin:16px auto 0; grid-template-columns:repeat(3,1fr); gap:8px}
   #keypad.show{display:grid}
-  .kp{padding:16px; border:1.5px solid var(--line); background:var(--panel); color:var(--ink); border-radius:12px; font-size:20px; font-family:'DM Mono',monospace; font-weight:600; cursor:pointer; min-height:56px}
-  .kp:active{background:var(--line)}
-  .kp.go{background:var(--tealDeep); color:#fff; border:none}
-  [data-theme="dark"] .kp.go{color:#0e1720}
+  .kp{padding:16px; border:1.5px solid var(--line); background:var(--panel); color:var(--ink); border-radius:13px; font-size:20px; font-family:'DM Mono',monospace; font-weight:600; min-height:56px}
+  .kp:active{background:var(--panel2)}
+  .kp.go{background:var(--ink); color:var(--paper); border:none}
   .kp.del{color:var(--red)}
-  /* results */
-  .rhead{text-align:center; margin-bottom:22px}
+
+  .rhead{text-align:center; margin:10px 0 22px}
   .rhead .eyebrow{font-family:'DM Mono',monospace; font-size:12px; color:var(--amber); letter-spacing:.12em; text-transform:uppercase}
-  .rhead .big{font-family:'Fraunces',serif; font-size:64px; font-weight:700; line-height:1; margin-top:8px; color:var(--tealDeep)}
-  [data-theme="dark"] .rhead .big{color:var(--teal)}
+  .rhead .big{font-family:'Fraunces',serif; font-size:66px; font-weight:700; line-height:1; margin-top:8px; color:var(--teal)}
   .rhead .verdict{font-size:16px; font-weight:600; margin-top:4px}
   .rhead .sub{color:var(--muted); font-size:14px; margin-top:6px}
-  .best{display:inline-block; margin-top:8px; font-size:12px; font-weight:700; color:var(--amber); background:color-mix(in srgb,var(--amber) 14%,var(--panel)); border:1px solid color-mix(in srgb,var(--amber) 34%,var(--line)); padding:4px 11px; border-radius:999px}
-  .scoregrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:10px; margin-bottom:16px}
-  .scorecell{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px; text-align:center}
+  .best{display:inline-block; margin-top:10px; font-size:12px; font-weight:700; color:var(--amber); background:color-mix(in srgb,var(--amber) 14%,var(--panel)); border:1px solid color-mix(in srgb,var(--amber) 34%,var(--line)); padding:5px 13px; border-radius:999px}
+  .scoregrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(84px,1fr)); gap:10px; margin-bottom:16px}
+  .scorecell{background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:14px; text-align:center; box-shadow:var(--shadow)}
   .scorecell .cv{font-family:'Fraunces',serif; font-size:25px; font-weight:600}
   .scorecell .cl{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px}
-  .expander{width:100%; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; font-weight:700; font-size:14px; cursor:pointer; color:var(--ink); display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
+  .expander{width:100%; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:14px 16px; font-weight:700; font-size:14px; color:var(--ink); display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; box-shadow:var(--shadow)}
   .expander .car{color:var(--muted); font-size:12px; transition:transform .2s}
   .expander.open .car{transform:rotate(90deg)}
   .expbody{display:none; margin-bottom:16px}
   .expbody.show{display:block; animation:rise .2s}
-  .reviewrow{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px; font-family:'DM Mono',monospace; font-size:13.5px; margin-bottom:7px;}
+  .reviewrow{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 14px; background:var(--panel); border:1px solid var(--line); border-radius:11px; font-family:'DM Mono',monospace; font-size:13.5px; margin-bottom:7px}
   .reviewrow .rq{flex:1; text-align:left}
   .reviewrow .given{color:var(--red); text-decoration:line-through; margin-right:9px}
   .reviewrow .correct{color:var(--green); font-weight:600}
   .rbtns{display:flex; gap:11px; margin-top:12px; flex-wrap:wrap}
-  .rbtns button{flex:1; min-width:130px; padding:15px; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer}
-  .rbtns .again{background:var(--tealDeep); color:#fff; border:none}
-  [data-theme="dark"] .rbtns .again{color:#0e1720}
+  .rbtns button{flex:1; min-width:130px; padding:15px; border-radius:13px; font-size:15px; font-weight:700}
+  .rbtns .again{background:var(--ink); color:var(--paper); border:none}
   .rbtns .weak{background:var(--coral); color:#fff; border:none}
-  .rbtns .home{background:none; color:var(--ink); border:2px solid var(--line)}
-  /* login modal */
-  .modal{position:fixed; inset:0; background:color-mix(in srgb,var(--ink) 55%,transparent); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100}
-  .modalcard{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:26px 24px; max-width:400px; width:100%; animation:pop .25s}
-  .modalcard h3{font-family:'Fraunces',serif; font-size:24px; margin:0 0 4px; font-weight:600}
+  .rbtns .home{background:var(--panel); color:var(--ink); border:1.5px solid var(--line)}
+  .fullbtn{width:100%;padding:14px;border-radius:13px;font-size:14.5px;font-weight:700;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+
+  .pillrow{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px}
+  .pill{padding:8px 15px; border:1.5px solid var(--line); background:var(--panel); color:var(--muted); border-radius:999px; font-size:13px; font-weight:700; transition:all .14s}
+  .pill.active{border-color:var(--ink); background:var(--ink); color:var(--paper)}
+  .tabrow{display:flex; gap:7px; margin-bottom:20px; background:var(--panel2); padding:5px; border-radius:13px}
+  .tabbtn{flex:1; padding:10px; border:none; background:transparent; color:var(--muted); border-radius:9px; font-size:13px; font-weight:700; transition:all .15s}
+  .tabbtn.active{background:var(--panel); color:var(--ink); box-shadow:var(--shadow)}
+  .panehint{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.5}
+  .board{display:flex; flex-direction:column; gap:8px}
+  .lbrow{display:flex; align-items:center; gap:13px; padding:13px 15px; background:var(--panel); border:1px solid var(--line); border-radius:13px; box-shadow:var(--shadow)}
+  .lbrow.me{border-color:var(--teal); background:color-mix(in srgb,var(--teal) 6%,var(--panel))}
+  .lbrank{width:28px; font-family:'DM Mono',monospace; font-weight:700; color:var(--muted); text-align:center; font-size:15px}
+  .lbname{flex:1; font-weight:600; font-size:14.5px}
+  .lbval{font-family:'DM Mono',monospace; font-weight:700; color:var(--teal); font-size:15px}
+  .masteryrow{display:flex; align-items:center; gap:11px; margin-bottom:9px; font-size:12.5px}
+  .masteryrow .mlab{width:120px; flex-shrink:0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .masteryrow .mbar{flex:1; height:9px; background:var(--line); border-radius:6px; overflow:hidden}
+  .masteryrow .mfill{height:100%; border-radius:6px; transition:width .5s}
+  .masteryrow .mpct{width:58px; text-align:right; font-family:'DM Mono',monospace; color:var(--muted)}
+  .chartwrap{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:18px; box-shadow:var(--shadow)}
+  .chartlegend{display:flex; gap:16px; font-size:11.5px; color:var(--muted); margin-top:10px; justify-content:center}
+  .chartlegend span{display:flex; align-items:center; gap:5px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .recentrow{display:flex; justify-content:space-between; align-items:center; padding:13px 15px; background:var(--panel); border:1px solid var(--line); border-radius:12px; font-size:13px; margin-bottom:8px; box-shadow:var(--shadow); width:100%; text-align:left; cursor:pointer; transition:transform .12s}
+  .recentrow:active{transform:scale(.98)}
+  .recentrow .m{font-weight:700; text-transform:capitalize}
+  .recentrow .when{font-size:11px;color:var(--muted);font-weight:400;margin-left:7px}
+  .recentrow .s{color:var(--muted); font-family:'DM Mono',monospace; display:flex; align-items:center; gap:9px}
+  .recentrow .chev{color:var(--muted);font-size:15px}
+  .seclabel{display:flex; align-items:baseline; gap:10px; margin:22px 0 12px}
+  .seclabel .t{font-weight:700; font-size:15px; font-family:'Fraunces',serif}
+  .seclabel .rule{flex:1; height:1px; background:var(--line)}
+  .fcard{background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:14px 16px; margin-bottom:9px; box-shadow:var(--shadow)}
+  .fcard .ftop{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+  .fcard .fname{font-weight:700; font-size:14.5px}
+  .fcard .ftopic{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-family:'DM Mono',monospace}
+  .fcard .fform{font-family:'DM Mono',monospace; font-size:15px; color:var(--teal); margin-top:6px}
+  .fcard .fnote{font-size:12px; color:var(--muted); margin-top:5px}
+  .ftopichead{font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--amber); font-family:'DM Mono',monospace; margin:18px 0 9px}
+  .minirow{display:flex; gap:9px; align-items:center; margin-bottom:9px}
+  .minibtn{padding:11px 16px; background:var(--ink); color:var(--paper); border:none; border-radius:11px; font-size:13.5px; font-weight:700}
+  .codebox{font-family:'DM Mono',monospace; font-size:30px; font-weight:700; color:var(--teal); letter-spacing:.28em; text-align:center; background:var(--panel2); border-radius:12px; padding:18px; margin:10px 0; user-select:all; cursor:pointer}
+
+  /* test-detail analysis */
+  .aqrow{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 15px;margin-bottom:9px;box-shadow:var(--shadow)}
+  .aqrow .aqtop{display:flex;align-items:flex-start;gap:10px}
+  .aqrow .aqnum{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:#fff}
+  .aqrow .aqnum.ok{background:var(--green)}
+  .aqrow .aqnum.no{background:var(--red)}
+  .aqrow .aqq{flex:1;font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+  .aqrow .aqtime{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);flex-shrink:0}
+  .aqrow .aqans{margin-top:8px;padding-left:34px;font-size:13px;font-family:'DM Mono',monospace}
+  .aqrow .aqans .yr{color:var(--red);text-decoration:line-through;margin-right:8px}
+  .aqrow .aqans .cr{color:var(--green);font-weight:600}
+  .aqrow .aqsteps{margin-top:7px;padding-left:34px;font-size:12px;color:var(--muted);line-height:1.6;font-family:'DM Mono',monospace}
+  .aqrow .aqsteps .tr{color:var(--amber)}
+  .speedchart{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px 12px;margin-bottom:18px;box-shadow:var(--shadow)}
+
+  .modal{position:fixed; inset:0; background:color-mix(in srgb,var(--ink) 55%,transparent); display:flex; align-items:center; justify-content:center; padding:20px; z-index:120}
+  .modalcard{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:26px 24px; max-width:400px; width:100%; animation:pop .25s; box-shadow:var(--shadow2)}
+  .modalcard h3{font-family:'Fraunces',serif; font-size:23px; margin:0 0 4px; font-weight:600}
   .modalcard p{color:var(--muted); font-size:13.5px; margin:0 0 18px; line-height:1.5}
   .modalcard label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700; display:block; margin-bottom:6px}
-  .modalcard input{width:100%; padding:12px 14px; border:1.5px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); font-size:16px; margin-bottom:14px; font-family:inherit}
+  .modalcard input{width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:11px; background:var(--paper); color:var(--ink); font-size:16px; margin-bottom:14px; font-family:inherit}
   .modalcard input.code{font-family:'DM Mono',monospace; letter-spacing:.3em; text-align:center; font-size:22px}
   .modalcard .merr{color:var(--red); font-size:12.5px; margin:-8px 0 12px; min-height:16px}
+  .primary{width:100%; padding:15px; background:var(--ink); color:var(--paper); border:none; border-radius:13px; font-size:16px; font-weight:700}
+  .ghostbtn{width:100%; padding:12px; background:none; border:1.5px solid var(--line); color:var(--muted); border-radius:11px; font-size:14px; font-weight:600; margin-top:8px}
   .syncnote{font-size:11.5px; color:var(--muted); margin-top:10px; text-align:center; line-height:1.5}
-  .welcomeback{background:color-mix(in srgb,var(--teal) 10%,var(--panel)); border:1px solid color-mix(in srgb,var(--teal) 30%,var(--line)); border-radius:12px; padding:14px 16px; margin-bottom:14px; font-size:15px; text-align:center}
+  .welcomeback{background:color-mix(in srgb,var(--teal) 9%,var(--panel)); border:1px solid color-mix(in srgb,var(--teal) 30%,var(--line)); border-radius:12px; padding:14px 16px; margin-bottom:14px; font-size:15px; text-align:center}
   .welcomeback b{font-family:'Fraunces',serif; font-size:19px; color:var(--teal); display:block; margin-top:3px}
-  .cloudpill{font-size:10px; padding:2px 8px; border-radius:999px; font-weight:700; letter-spacing:.03em}
-  .cloudpill.on{background:color-mix(in srgb,var(--green) 16%,var(--panel)); color:var(--green)}
-  .cloudpill.off{background:color-mix(in srgb,var(--muted) 16%,var(--panel)); color:var(--muted)}
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:200}
+  .confetti-piece{position:absolute;width:9px;height:9px;top:-12px;animation:confettiFall linear forwards}
   .hidden{display:none}
-  /* overlays */
-  .overlay{position:fixed; inset:0; background:var(--paper); z-index:90; overflow-y:auto; animation:rise .25s}
-  .overlaybar{position:sticky; top:0; background:var(--paper); border-bottom:1px solid var(--line); padding:16px 18px; max-width:780px; margin:0 auto; display:flex; justify-content:space-between; align-items:center}
-  .obtitle{font-family:'Fraunces',serif; font-weight:600; font-size:20px}
-  .overlaybody{max-width:780px; margin:0 auto; padding:18px 18px 60px}
-  .tabrow{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap}
-  .tabbtn{padding:8px 14px; border:1.5px solid var(--line); background:transparent; color:var(--muted); border-radius:999px; font-size:13px; font-weight:600; cursor:pointer}
-  .tabbtn.active{border-color:var(--teal); background:var(--teal); color:#fff}
-  [data-theme="dark"] .tabbtn.active{color:#0e1720}
-  .panehint{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.5}
-  .minirow{display:flex; gap:8px; align-items:center; margin-bottom:8px}
-  .minibtn{padding:9px 14px; background:var(--tealDeep); color:#fff; border:none; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer}
-  [data-theme="dark"] .minibtn{color:#0e1720}
-  .board{display:flex; flex-direction:column; gap:7px; margin-top:10px}
-  .lbrow{display:flex; align-items:center; gap:12px; padding:11px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px}
-  .lbrow.me{border-color:var(--teal); background:color-mix(in srgb,var(--teal) 7%,var(--panel))}
-  .lbrank{width:26px; font-family:'DM Mono',monospace; font-weight:700; color:var(--muted); text-align:center}
-  .lbrank.top{color:var(--amber)}
-  .lbname{flex:1; font-weight:600; font-size:14px}
-  .lbval{font-family:'DM Mono',monospace; font-weight:700; color:var(--teal)}
-  .fcard{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:8px}
-  .fcard .ftop{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
-  .fcard .fname{font-weight:700; font-size:14px}
-  .fcard .ftopic{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-family:'DM Mono',monospace}
-  .fcard .fform{font-family:'DM Mono',monospace; font-size:15px; color:var(--teal); margin-top:5px}
-  .fcard .fnote{font-size:12px; color:var(--muted); margin-top:4px}
-  .ftopichead{font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--amber); font-family:'DM Mono',monospace; margin:16px 0 8px}
 </style>
 </head>
 <body>
 <header>
   <div class="brand" onclick="goHome()">
     <h1>Quant</h1>
-    <span class="tag">ssc mental math</span>
+    <span class="tag">SSC Trainer</span>
   </div>
   <div class="headright">
-    <span class="who" id="whoLabel" onclick="switchUser()" style="cursor:pointer" title="Switch code"></span>
-    <button class="iconbtn hidden" id="installBtn" onclick="doInstall()" title="Install app">&#8681;</button>
     <span class="cloudpill off" id="cloudPill">local</span>
-    <button class="iconbtn" id="soundBtn" onclick="toggleSound()" title="Sound">&#128266;</button>
-    <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Theme">&#9790;</button>
-    <button class="homebtn hidden" id="homeBtn" onclick="goHome()">&larr; Home</button>
+    <span class="who" id="whoLabel" onclick="switchUser()"></span>
+    <button class="iconbtn" id="soundBtn" onclick="toggleSound()" title="Toggle sound">&#128266;</button>
+    <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">&#9789;</button>
+    <button class="iconbtn hidden" id="installBtn" title="Install app">&#8681;</button>
   </div>
 </header>
-<div class="wrap">
-  <!-- HOME -->
-  <div id="home" class="screen">
-    <div class="hero">
-      <h2>Calculate faster than<br>you can reach for a pen.</h2>
-      <p>Adaptive drills across 33 calculation topics in the SSC syllabus, with tricks, step-by-step solutions, and progress tracking. Built to sharpen speed and revise formulas — every question is solvable in your head.</p>
+
+<!-- ================= HOME ================= -->
+<div id="home" class="wrap screen">
+  <div class="hgreet"><div class="hi" id="greetHi">Ready to drill?</div></div>
+
+  <div class="streakhero">
+    <div class="flamebig">&#128293;</div>
+    <div class="stx">
+      <div class="sd" id="streakNum">0</div>
+      <div class="sl">day streak</div>
     </div>
-    <div class="cardrow">
-      <div class="goalbar">
-        <svg id="goalRing" width="50" height="50" viewBox="0 0 50 50"></svg>
-        <div class="gtext"><div class="gtitle">Daily goal</div><div class="gsub" id="goalSub"></div></div>
-        <div><div class="flame" id="streakNum">0</div><div class="flabel">day streak</div></div>
-      </div>
-      <button class="quickcard" id="weakBtn" onclick="startWeak()">
-        <span class="qt">Weak spots</span>
-        <span class="qs" id="weakSub">Build your history first</span>
-      </button>
-    </div>
-    <div class="cardrow">
-      <button class="quickcard" id="dailyBtn" onclick="startDaily()" style="background:var(--amber)">
-        <span class="qt">Daily challenge</span>
-        <span class="qs" id="dailySub">Same 15 for everyone today</span>
-      </button>
-      <button class="quickcard" id="srBtn" onclick="startSR()" style="background:var(--coral)">
-        <span class="qt">Review due</span>
-        <span class="qs" id="srSub">Spaced repetition</span>
-      </button>
-    </div>
-    <div class="cardrow">
-      <button class="quickcard" onclick="openFormulas()" style="background:var(--tealDeep)">
-        <span class="qt">Formula cards</span>
-        <span class="qs">Revise 77 formulas</span>
-      </button>
-      <button class="quickcard" onclick="openSocial()" style="background:var(--accent2)">
-        <span class="qt">Leaderboard &amp; challenges</span>
-        <span class="qs">Compete with friends</span>
-      </button>
-    </div>
-    <div class="seclabel"><span class="n">01</span><span class="t">Choose a mode</span><span class="rule"></span></div>
-    <div class="modes" id="modeGrid"></div>
-    <div class="seclabel"><span class="n">02</span><span class="t">Format &amp; scoring</span><span class="rule"></span></div>
-    <div class="toggles">
-      <label><input type="checkbox" id="mcqToggle" onchange="syncCfg()"> MCQ (multiple choice)</label>
-      <label><input type="checkbox" id="negToggle" onchange="syncCfg()"> Negative marking (&minus;0.5)</label>
-      <label><input type="checkbox" id="solToggle" checked onchange="syncCfg()"> Show solution on mistakes</label>
-      <label><input type="checkbox" id="approxToggle" onchange="syncCfg()"> Approx mode (within 2%)</label>
-      <label><input type="checkbox" id="perQToggle" onchange="syncCfg()"> Per-question timer</label>
-      <span id="perQSecsWrap" class="hidden" style="display:inline-flex;align-items:center;gap:6px;font-size:13px"><input id="perQSecs" type="number" min="10" max="120" value="40" onchange="syncCfg()" style="width:60px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace"> sec each</span>
-    </div>
-    <div id="customBox" class="hidden">
-      <div class="customrow">
-        <div class="customfield"><label>Questions</label><input id="customCount" type="number" min="5" max="100" value="20"></div>
-        <div class="customfield"><label>Minutes (0 = none)</label><input id="customMins" type="number" min="0" max="180" value="15"></div>
-      </div>
-    </div>
-    <div class="seclabel"><span class="n">03</span><span class="t">Difficulty</span><span class="rule"></span></div>
-    <div class="toggles"><label><input type="checkbox" id="adaptive" checked onchange="toggleAdaptive()"> Adaptive — auto-adjust as I go</label></div>
-    <div id="levelWrap"><div id="levelChips"></div><div id="levelHint">Starts at Easy and climbs with your accuracy.</div></div>
-    <div class="seclabel"><span class="n">04</span><span class="t">Topics</span><span class="rule"></span></div>
-    <div id="topicArea" style="margin-bottom:28px"></div>
-    <button class="primary" id="startBtn" onclick="startSession()">Start Practice &rarr;</button>
-    <div class="recent hidden" id="chartBox">
-      <div class="seclabel"><span class="n">05</span><span class="t">Progress over time</span><span class="rule"></span></div>
-      <div class="chartwrap"><svg id="progChart" width="100%" height="150" viewBox="0 0 340 150" preserveAspectRatio="none"></svg>
-        <div class="chartlegend"><span><i class="dot" style="background:var(--teal)"></i>Accuracy %</span><span><i class="dot" style="background:var(--amber)"></i>Avg speed</span></div>
-      </div>
-    </div>
-    <div class="recent hidden" id="masteryBox">
-      <div class="seclabel"><span class="n">06</span><span class="t">Topic mastery</span><span class="rule"></span></div>
-      <div id="masteryList"></div>
-    </div>
-    <div class="recent hidden" id="recentBox">
-      <div class="seclabel"><span class="n">07</span><span class="t">Recent sessions</span><span class="rule"></span></div>
-      <div id="recentList"></div>
+    <div class="ring">
+      <svg id="goalRing" width="52" height="52" viewBox="0 0 52 52"></svg>
+      <div class="goaltxt" id="goalSub"></div>
     </div>
   </div>
-  <!-- ENGINE -->
-  <div id="engine" class="screen hidden">
-    <div class="statusbar">
-      <div class="statsleft">
-        <span class="stat"><span class="lab">Correct</span><span class="v" id="sCorrect" style="color:var(--green)">0</span></span>
-        <span class="stat"><span class="lab">Wrong</span><span class="v" id="sWrong" style="color:var(--red)">0</span></span>
-        <span class="stat" id="accWrap"><span class="lab">Acc</span><span class="v" id="sAcc" style="color:var(--teal)">100%</span></span>
-        <span class="stat hidden" id="scoreWrap"><span class="lab">Score</span><span class="v" id="sScore" style="color:var(--amber)">0</span></span>
-      </div>
-      <div class="statsright">
-        <span class="stat hidden" id="lvlWrap"><span class="lab">Lvl</span><span class="v" id="sLvl" style="color:var(--amber)">2</span></span>
-        <span class="stat" id="qtWrap"><span class="lab">This Q</span><span class="v" id="sQt">0.0s</span></span>
-        <span id="timer" class="hidden">1:00</span>
-        <span id="counter" class="hidden">1/20</span>
-      </div>
-    </div>
-    <div class="progress hidden" id="progressWrap"><div class="bar" id="progressBar"></div></div>
-    <div class="pacewrap hidden" id="paceWrap"><div class="pacebar"><div class="pacefill" id="paceFill"></div><div class="pacetarget" id="paceTarget"></div></div><div class="pacelabel" id="paceLabel"></div></div>
-    <div class="streak hidden" id="streakBox"></div>
-    <div class="qcard fresh" id="qcard">
-      <div class="qkind" id="qkind">Addition</div>
-      <div class="qtext" id="qtext">12 + 34</div>
-      <div id="typeArea">
-        <div class="answerrow">
-          <input id="answer" inputmode="none" placeholder="answer" autocomplete="off">
-          <button id="submitBtn" onclick="submitTyped()">&crarr;</button>
-        </div>
-        <div id="keypad">
-          <button class="kp" onclick="kp('7')">7</button><button class="kp" onclick="kp('8')">8</button><button class="kp" onclick="kp('9')">9</button>
-          <button class="kp" onclick="kp('4')">4</button><button class="kp" onclick="kp('5')">5</button><button class="kp" onclick="kp('6')">6</button>
-          <button class="kp" onclick="kp('1')">1</button><button class="kp" onclick="kp('2')">2</button><button class="kp" onclick="kp('3')">3</button>
-          <button class="kp" onclick="kp('.')">.</button><button class="kp" onclick="kp('0')">0</button><button class="kp del" onclick="kpDel()">&larr;</button>
-          <button class="kp go" onclick="submitTyped()" style="grid-column:1 / -1">&crarr; Enter</button>
-        </div>
-      </div>
-      <div id="mcqArea" class="mcqgrid hidden"></div>
-      <div class="fbline" id="fbline"></div>
-      <div class="solbox" id="solBox"></div>
-    </div>
-    <div class="controls">
-      <button class="ghost hidden" id="skipBtn" onclick="skipQuestion()">Skip / show answer</button>
-      <button class="ghost" id="endBtn" onclick="endSession()">Quit</button>
-    </div>
+
+  <div class="tiles">
+    <button class="tile accent-amber" id="dailyTile" onclick="startDaily()">
+      <span class="ic">&#9733;</span>
+      <span class="tt">Daily challenge</span>
+      <span class="ts" id="dailySub">Same 15 for everyone today</span>
+    </button>
+    <button class="tile accent-coral" id="srTile" onclick="startSR()">
+      <span class="ic">&#128260;</span>
+      <span class="tt">Review due</span>
+      <span class="ts" id="srSub">Spaced repetition</span>
+    </button>
+    <button class="tile accent-teal" id="weakTile" onclick="startWeak()">
+      <span class="ic">&#9889;</span>
+      <span class="tt">Weak spots</span>
+      <span class="ts" id="weakSub">Build your history first</span>
+    </button>
+    <button class="tile accent-violet" onclick="openFormulas()">
+      <span class="ic">&#402;</span>
+      <span class="tt">Formula cards</span>
+      <span class="ts">Revise 77 formulas</span>
+    </button>
   </div>
-  <!-- RESULTS -->
-  <div id="results" class="screen hidden">
-    <div class="rhead">
-      <div class="eyebrow" id="rEyebrow">quiz complete</div>
-      <div class="big" id="rBig">0%</div>
-      <div class="verdict" id="rVerdict"></div>
-      <div class="sub" id="rSub"></div>
-      <div id="bestBadge"></div>
-    </div>
-    <div class="scoregrid" id="scoreGrid"></div>
-    <button class="expander" id="topicExp" onclick="toggleExp('topic')"><span>By topic</span><span class="car">&#9654;</span></button>
-    <div class="expbody" id="topicBody"></div>
-    <button class="expander hidden" id="reviewExp" onclick="toggleExp('review')"><span id="reviewExpLabel">Review mistakes</span><span class="car">&#9654;</span></button>
-    <div class="expbody" id="reviewBody"></div>
-    <div class="rbtns">
-      <button class="again" onclick="againSession()">Go again</button>
-      <button class="weak hidden" id="redoWrongBtn" onclick="startRedoWrong()">Retry wrong ones</button>
-      <button class="home" onclick="goHome()">Change setup</button>
+
+  <button class="startbtn" onclick="openWizard('practice')">Start Practice <span class="ar">&#8594;</span></button>
+
+  <div class="navrow">
+    <button class="navbtn" onclick="openLeaderboard()"><span class="ni">&#127942;</span> Leaderboard</button>
+    <button class="navbtn" onclick="openAnalysis()"><span class="ni">&#128202;</span> Analysis</button>
+  </div>
+</div>
+
+<!-- ================= WIZARD ================= -->
+<div id="wizard" class="page hidden">
+  <div class="pagebar">
+    <button class="pageback" id="wizBackBtn" onclick="wizBackOrClose()">&#8592;</button>
+    <span class="pagetitle" id="wizTitle">Set up practice</span>
+  </div>
+  <div class="pagebody">
+    <div class="wizprog" id="wizProg"></div>
+    <div id="wizContent"></div>
+  </div>
+  <div class="wizfoot">
+    <div class="inner">
+      <button class="wbtn back hidden" id="wizPrevBtn" onclick="wizBack()">Back</button>
+      <button class="wbtn next" id="wizNextBtn" onclick="wizNext()">Next</button>
     </div>
   </div>
 </div>
-<div id="confetti"></div>
-<!-- FORMULA CARDS OVERLAY -->
-<div id="formulaScreen" class="overlay hidden">
-  <div class="overlaybar">
-    <span class="obtitle">Formula reference</span>
-    <button class="homebtn" onclick="closeOverlay('formulaScreen')">&times; Close</button>
+
+<!-- ================= LEADERBOARD ================= -->
+<div id="leaderboard" class="page hidden">
+  <div class="pagebar">
+    <button class="pageback" onclick="closePage('leaderboard')">&#8592;</button>
+    <span class="pagetitle">Leaderboard &amp; challenges</span>
   </div>
-  <div class="overlaybody">
-    <div id="formulaTopicChips" class="grpchips" style="margin-bottom:16px"></div>
-    <div id="formulaList"></div>
-  </div>
-</div>
-<!-- SOCIAL OVERLAY -->
-<div id="socialScreen" class="overlay hidden">
-  <div class="overlaybar">
-    <span class="obtitle">Leaderboard &amp; challenges</span>
-    <button class="homebtn" onclick="closeOverlay('socialScreen')">&times; Close</button>
-  </div>
-  <div class="overlaybody">
-    <div class="tabrow" id="socialTabs">
-      <button class="tabbtn active" data-tab="global" onclick="socialTab('global')">Global</button>
-      <button class="tabbtn" data-tab="daily" onclick="socialTab('daily')">Daily</button>
-      <button class="tabbtn" data-tab="groups" onclick="socialTab('groups')">Friend group</button>
-      <button class="tabbtn" data-tab="challenge" onclick="socialTab('challenge')">Challenges</button>
+  <div class="pagebody">
+    <div class="tabrow" id="lbTabs">
+      <button class="tabbtn active" data-tab="global" onclick="lbTab('global')">Global</button>
+      <button class="tabbtn" data-tab="daily" onclick="lbTab('daily')">Daily</button>
+      <button class="tabbtn" data-tab="friends" onclick="lbTab('friends')">Friends</button>
+      <button class="tabbtn" data-tab="challenge" onclick="lbTab('challenge')">Challenge</button>
     </div>
-    <div id="tab-global" class="tabpane">
-      <div class="minirow"><label style="font-size:12px;color:var(--muted);font-weight:700">Board:</label>
-        <select id="globalMode" onchange="renderGlobal()" style="padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit"><option value="quiz">Quiz accuracy</option><option value="speed">Speed (solved)</option><option value="mock">Mock accuracy</option></select>
+
+    <div id="lb-global" class="lbpane">
+      <div class="pillrow" id="globalPills">
+        <button class="pill active" data-mode="quiz" onclick="setGlobalMode('quiz')">Accuracy</button>
+        <button class="pill" data-mode="speed" onclick="setGlobalMode('speed')">Speed</button>
+        <button class="pill" data-mode="mock" onclick="setGlobalMode('mock')">Mock</button>
       </div>
       <div id="globalBoard" class="board"></div>
     </div>
-    <div id="tab-daily" class="tabpane hidden">
+
+    <div id="lb-daily" class="lbpane hidden">
       <p class="panehint">Today's challenge score — same 15 questions for everyone.</p>
       <div id="dailyBoard" class="board"></div>
     </div>
-    <div id="tab-groups" class="tabpane hidden">
-      <p class="panehint">Create or join a private group with a shared code, then compare.</p>
+
+    <div id="lb-friends" class="lbpane hidden">
+      <p class="panehint">Join or create a private group with a shared code, then compare.</p>
       <div class="minirow">
-        <input id="groupInput" placeholder="GROUP CODE" maxlength="12" style="text-transform:uppercase;padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;letter-spacing:.1em;flex:1">
-        <button class="minibtn" onclick="doJoinGroup()">Join / Create</button>
+        <input id="groupInput" placeholder="GROUP CODE" maxlength="12" style="text-transform:uppercase;padding:11px 14px;border:1.5px solid var(--line);border-radius:11px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;letter-spacing:.1em;flex:1">
+        <button class="minibtn" onclick="doJoinGroup()">Join</button>
       </div>
-      <div id="myGroups" style="margin:12px 0"></div>
-      <div class="minirow" id="groupBoardControls" style="display:none">
-        <select id="groupMode" onchange="renderGroupBoard()" style="padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit"><option value="quiz">Quiz</option><option value="speed">Speed</option><option value="mock">Mock</option></select>
+      <div id="myGroups" style="margin:14px 0 6px"></div>
+      <div class="pillrow" id="groupPills" style="display:none">
+        <button class="pill active" data-mode="quiz" onclick="setGroupMode('quiz')">Accuracy</button>
+        <button class="pill" data-mode="speed" onclick="setGroupMode('speed')">Speed</button>
+        <button class="pill" data-mode="mock" onclick="setGroupMode('mock')">Mock</button>
       </div>
       <div id="groupBoard" class="board"></div>
     </div>
-    <div id="tab-challenge" class="tabpane hidden">
-      <p class="panehint">Challenge friends: share a link/code. They play, results compare.</p>
-      <div class="challengeCreate">
-        <div class="minirow" style="flex-wrap:wrap;gap:8px">
-          <button class="minibtn" onclick="createChallengeUI('set')">New question set</button>
-          <button class="minibtn" onclick="createChallengeUI('streak')">Streak battle</button>
-          <button class="minibtn" onclick="createChallengeUI('accuracy')">Accuracy battle</button>
-        </div>
-        <div id="challengeCreateOut" style="margin-top:10px"></div>
+
+    <div id="lb-challenge" class="lbpane hidden">
+      <p class="panehint">Create a challenge with your own mode, format and topics, then share it.</p>
+      <div class="minirow" style="flex-wrap:wrap;gap:8px">
+        <button class="minibtn" onclick="openWizard('challenge_set')">New question set</button>
+        <button class="minibtn" onclick="createChallengeUI('streak')" style="background:var(--coral)">Streak battle</button>
+        <button class="minibtn" onclick="createChallengeUI('accuracy')" style="background:var(--accent2)">Accuracy battle</button>
       </div>
-      <div style="margin-top:18px">
+      <div id="challengeCreateOut" style="margin-top:14px"></div>
+      <div style="margin-top:22px">
         <div class="minirow">
-          <input id="challengeInput" placeholder="Paste challenge code" style="padding:9px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;flex:1">
+          <input id="challengeInput" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" style="padding:11px 14px;border:1.5px solid var(--line);border-radius:11px;background:var(--panel);color:var(--ink);font-family:'DM Mono',monospace;letter-spacing:.2em;flex:1">
           <button class="minibtn" onclick="openChallenge()">Open</button>
         </div>
         <div id="challengeOut" style="margin-top:12px"></div>
@@ -449,25 +436,159 @@
     </div>
   </div>
 </div>
+
+<!-- ================= ANALYSIS ================= -->
+<div id="analysis" class="page hidden">
+  <div class="pagebar">
+    <button class="pageback" onclick="closePage('analysis')">&#8592;</button>
+    <span class="pagetitle">Analysis</span>
+  </div>
+  <div class="pagebody">
+    <p class="panehint" id="analysisEmpty">Play a few sessions and your progress will show up here.</p>
+    <div class="chartwrap hidden" id="analysisChartBox">
+      <svg id="progChart" viewBox="0 0 320 150" width="100%" height="150"></svg>
+      <div class="chartlegend"><span><i class="dot" style="background:var(--teal)"></i>Accuracy%</span><span><i class="dot" style="background:var(--amber)"></i>Avg time/Q</span></div>
+    </div>
+    <div class="hidden" id="analysisMasteryBox">
+      <div class="seclabel"><span class="t">Topic mastery</span><span class="rule"></span></div>
+      <div id="masteryList"></div>
+    </div>
+    <div class="hidden" id="analysisRecentBox">
+      <div class="seclabel"><span class="t">Recent tests</span><span class="rule"></span></div>
+      <div id="recentList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TEST DETAIL ================= -->
+<div id="testDetail" class="page hidden">
+  <div class="pagebar">
+    <button class="pageback" onclick="closePage('testDetail')">&#8592;</button>
+    <span class="pagetitle">Test analysis</span>
+  </div>
+  <div class="pagebody">
+    <div class="rhead" style="margin-top:0">
+      <div class="eyebrow" id="tdEyebrow">QUIZ</div>
+      <div class="big" id="tdBig">85%</div>
+      <div class="sub" id="tdSub"></div>
+    </div>
+    <div class="scoregrid" id="tdScoreGrid"></div>
+    <div class="speedchart">
+      <svg id="tdSpeedChart" viewBox="0 0 320 160" width="100%" height="160"></svg>
+      <div class="chartlegend"><span><i class="dot" style="background:var(--teal)"></i>Correct</span><span><i class="dot" style="background:var(--red)"></i>Wrong</span><span><i class="dot" style="background:var(--muted)"></i>Avg time</span></div>
+    </div>
+    <div class="seclabel"><span class="t">Every question</span><span class="rule"></span></div>
+    <div id="tdQuestions"></div>
+  </div>
+</div>
+
+<!-- ================= FORMULA CARDS ================= -->
+<div id="formulaScreen" class="page hidden">
+  <div class="pagebar">
+    <button class="pageback" onclick="closePage('formulaScreen')">&#8592;</button>
+    <span class="pagetitle">Formula reference</span>
+  </div>
+  <div class="pagebody">
+    <div class="grpchips" id="formulaTopicChips" style="margin-bottom:18px"></div>
+    <div id="formulaList"></div>
+  </div>
+</div>
+
+<!-- ================= ENGINE ================= -->
+<div id="engine" class="wrap screen hidden">
+  <div class="statusbar">
+    <div class="statsleft">
+      <span class="stat" id="accWrap"><span class="lab">Score</span><span class="v" id="sAcc">0/0</span></span>
+      <span class="stat hidden" id="scoreWrap"><span class="lab">Points</span><span class="v" id="sScore">0</span></span>
+      <span class="stat hidden" id="lvlWrap"><span class="lab">Level</span><span class="v" id="sLvl">Easy</span></span>
+      <span class="hidden" id="sCorrect">0</span><span class="hidden" id="sWrong">0</span>
+    </div>
+    <div class="statsright">
+      <span id="timer" class="hidden">1:00</span>
+      <span id="counter" class="hidden">1 / 20</span>
+      <span id="sQt">0.0s</span>
+    </div>
+  </div>
+  <div class="progress hidden" id="progressWrap"><div class="bar" id="progressBar"></div></div>
+  <div class="pacewrap hidden" id="paceWrap">
+    <div class="pacebar"><div class="pacefill" id="paceFill"></div><div class="pacetarget" id="paceTarget"></div></div>
+    <div class="pacelabel" id="paceLabel">pace</div>
+  </div>
+  <div class="streak hidden" id="streakBox"></div>
+
+  <div class="qcard" id="qcard">
+    <div class="qkind" id="qkind">Addition</div>
+    <div class="qtext" id="qtext">47 + 38 = ?</div>
+
+    <div class="answerrow" id="typeArea">
+      <input type="text" id="answer" inputmode="decimal" autocomplete="off" placeholder="?" onkeydown="if(event.key==='Enter')submitTyped()">
+      <button id="submitBtn" onclick="submitTyped()">Go</button>
+    </div>
+    <div class="mcqgrid hidden" id="mcqArea"></div>
+
+    <div class="fbline" id="fbline"></div>
+    <div class="solbox" id="solBox"></div>
+  </div>
+
+  <div id="keypad">
+    <button class="kp" onclick="kp('7')">7</button><button class="kp" onclick="kp('8')">8</button><button class="kp" onclick="kp('9')">9</button>
+    <button class="kp" onclick="kp('4')">4</button><button class="kp" onclick="kp('5')">5</button><button class="kp" onclick="kp('6')">6</button>
+    <button class="kp" onclick="kp('1')">1</button><button class="kp" onclick="kp('2')">2</button><button class="kp" onclick="kp('3')">3</button>
+    <button class="kp" onclick="kp('-')">&minus;</button><button class="kp" onclick="kp('0')">0</button><button class="kp del" onclick="kpDel()">&#9003;</button>
+    <button class="kp" onclick="kp('.')">.</button><button class="kp go" onclick="submitTyped()">Go</button><button class="kp" onclick="skipQuestion()">Skip</button>
+  </div>
+
+  <div class="controls">
+    <button class="ghost" id="skipBtn" onclick="skipQuestion()">Skip &#8594;</button>
+    <button class="ghost" onclick="endSession()" id="endBtn">Quit</button>
+  </div>
+</div>
+
+<!-- ================= RESULTS ================= -->
+<div id="results" class="wrap screen hidden">
+  <div class="rhead">
+    <div class="eyebrow" id="rEyebrow">SESSION COMPLETE</div>
+    <div class="big" id="rBig">85%</div>
+    <div class="verdict" id="rVerdict"></div>
+    <div class="sub" id="rSub"></div>
+    <div id="bestBadge"></div>
+  </div>
+  <div class="scoregrid" id="scoreGrid"></div>
+  <button class="fullbtn" id="rFullAnalysisBtn" onclick="openLastTestDetail()">See full question-by-question analysis &#8594;</button>
+  <div id="rChallengeBox"></div>
+  <button class="expander" id="topicExp" onclick="toggleExp('topic')"><span>Topic breakdown</span><span class="car">&#8250;</span></button>
+  <div class="expbody" id="topicBody"></div>
+  <button class="expander" id="reviewExp" onclick="toggleExp('review')"><span id="reviewExpLabel">Review mistakes</span><span class="car">&#8250;</span></button>
+  <div class="expbody" id="reviewBody"></div>
+  <div class="rbtns">
+    <button class="again" onclick="againSession()">Practice again</button>
+    <button class="weak hidden" id="redoWrongBtn" onclick="startRedoWrong()">Redo wrong ones</button>
+    <button class="home" onclick="goHome()">Home</button>
+  </div>
+</div>
+
+<div id="confetti"></div>
+
+<!-- ================= LOGIN MODAL ================= -->
 <div id="loginModal" class="modal hidden">
   <div class="modalcard">
+    <button class="pageback hidden" id="loginBack" onclick="loginReset()" style="margin-bottom:10px">&#8592;</button>
     <h3 id="loginTitle">Save your progress</h3>
     <p id="loginDesc">Enter a 4-digit code. Use the same code on any device to load your stats. <span id="cloudModeNote"></span></p>
     <div id="codeStep">
-      <label>4-digit code</label>
-      <input id="loginCode" class="code" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+      <label>Your code</label>
+      <input type="text" id="loginCode" class="code" maxlength="4" inputmode="numeric" placeholder="0000">
+      <div class="merr" id="loginErr"></div>
     </div>
     <div id="nameStep" class="hidden">
-      <div id="welcomeBack" class="welcomeback hidden"></div>
+      <div id="welcomeBack" class="hidden welcomeback"></div>
       <div id="nameFieldWrap">
-        <label>Your name</label>
-        <input id="loginName" maxlength="20" placeholder="e.g. Manish" autocomplete="off">
+        <label>Name</label>
+        <input type="text" id="loginName" maxlength="20" placeholder="Your name">
       </div>
     </div>
-    <div class="merr" id="loginErr"></div>
     <button class="primary" id="loginBtn" onclick="loginNext()">Continue</button>
-    <button class="ghost hidden" id="loginBack" onclick="loginReset()" style="width:100%;margin-top:8px">Use a different code</button>
-    <div class="syncnote" id="syncStatus"></div>
+    <p class="syncnote" id="syncStatus"></p>
   </div>
 </div>
 <script>
@@ -708,9 +829,7 @@ function genFormulaQ(){
 
 
 /* ============================================================
-   FIREBASE CONFIG  — paste your 6 values here to enable cloud sync.
-   Leave as-is to run local-only (everything still works).
-   Setup walkthrough: ask and follow the numbered checklist.
+   FIREBASE CONFIG
    ============================================================ */
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyDUfpe43b8yUUa-dgbS7-81y-YzDTAetKc",
@@ -724,7 +843,7 @@ let fbDB=null, cloudReady=false;
 
 /* ---- local + persistent store ---- */
 const LS_KEY="quant_v3";
-const APP_EPOCH=1735689600000; // 2025-01-01, floor for clock-sanity checks
+const APP_EPOCH=1735689600000;
 function nowTs(){const t=Date.now();return (t<APP_EPOCH||t>APP_EPOCH+50*365*24*3600*1000)?APP_EPOCH:t;}
 function blankStore(){return {history:[], mastery:{}, streakDays:0, lastDay:null, todayCount:0, todayDate:null, sound:true, theme:"light", best:{}, user:null, updatedAt:0, sr:{}, groups:[], dailyDone:null};}
 function loadStore(){try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s)return Object.assign(blankStore(),s);}catch(e){}return blankStore();}
@@ -737,14 +856,10 @@ const DAILY_GOAL=50;
 /* ---- cloud sync (Firebase Realtime DB) ---- */
 function loadFirebaseScripts(cb){
   if(window.firebase&&window.firebase.database){cb();return;}
-  let done=false;
-  function finish(err){if(done)return;done=true;cb(err);}
-  // inject both scripts
+  let done=false;function finish(err){if(done)return;done=true;cb(err);}
   const s1=document.createElement("script");s1.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js";
-  s1.onload=function(){const s2=document.createElement("script");s2.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js";s2.onload=function(){finish();};s2.onerror=function(){/* rely on poll */};document.head.appendChild(s2);};
-  s1.onerror=function(){/* rely on poll */};
-  document.head.appendChild(s1);
-  // poll for actual availability (survives extension interference with onload/onerror)
+  s1.onload=function(){const s2=document.createElement("script");s2.src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js";s2.onload=function(){finish();};s2.onerror=function(){};document.head.appendChild(s2);};
+  s1.onerror=function(){};document.head.appendChild(s1);
   let tries=0;const iv=setInterval(function(){tries++;if(window.firebase&&window.firebase.database){clearInterval(iv);finish();}else if(tries>=40){clearInterval(iv);finish(true);}},150);
 }
 function initCloud(cb){
@@ -759,7 +874,6 @@ function initCloud(cb){
 function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
 function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
 function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;store.sr=d.sr||{};store.groups=d.groups||[];store.dailyDone=d.dailyDone||null;}
-/* pullCloud: used at LOGIN — identity wins, cloud copy is authoritative for that code. */
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
   const k=userKey();if(!k){cb&&cb(false);return;}
@@ -768,9 +882,6 @@ function pullCloud(cb){
     else{cb&&cb(true,false);}
   }).catch(function(){cb&&cb(false);});
 }
-/* syncMerge: used on page load for an ALREADY-logged-in user (same code).
-   Compares timestamps: whichever copy is newer wins, so a device that
-   played offline keeps its newer data instead of being overwritten. */
 function syncMerge(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
   const k=userKey();if(!k){cb&&cb(false);return;}
@@ -782,7 +893,6 @@ function syncMerge(cb){
       else if(localTs>cloudTs){pushCloud();cb&&cb(true,"local-newer");}
       else{cb&&cb(true,"equal");}
     }else{
-      // no cloud record yet for this code — push local up if we have anything
       if((store.history&&store.history.length)||Object.keys(store.mastery||{}).length)pushCloud();
       cb&&cb(true,"created");
     }
@@ -817,7 +927,7 @@ const sndWrong=()=>beep(170,0.2,"sawtooth");
 function sndCheer(){if(!store.sound)return;[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.15,"triangle"),i*90));}
 
 /* ---- theme + sound ---- */
-function applyTheme(){document.documentElement.setAttribute("data-theme",store.theme==="dark"?"dark":"light");document.getElementById("themeBtn").innerHTML=store.theme==="dark"?"&#9728;":"&#9790;";}
+function applyTheme(){document.documentElement.setAttribute("data-theme",store.theme==="dark"?"dark":"light");document.getElementById("themeBtn").innerHTML=store.theme==="dark"?"&#9728;":"&#9789;";}
 function toggleTheme(){store.theme=store.theme==="dark"?"light":"dark";applyTheme();saveStore();}
 function applySound(){document.getElementById("soundBtn").innerHTML=store.sound?"&#128266;":"&#128263;";}
 function toggleSound(){store.sound=!store.sound;applySound();saveStore();if(store.sound)sndRight();}
@@ -825,8 +935,8 @@ function toggleSound(){store.sound=!store.sound;applySound();saveStore();if(stor
 /* ---- confetti ---- */
 function confetti(){
   const box=document.getElementById("confetti");const cols=["#0f766e","#e0a53d","#d96248","#2f9e60","#5b6cff"];
-  for(let i=0;i<70;i++){const p=document.createElement("div");const size=rnd(6,11);
-    p.style.cssText="position:fixed;top:-20px;left:"+rnd(0,100)+"vw;width:"+size+"px;height:"+(size+rnd(0,6))+"px;background:"+pick(cols)+";border-radius:2px;pointer-events:none;z-index:200;animation:confettiFall "+(1.6+Math.random()*1.4)+"s ease-in "+(Math.random()*0.3)+"s forwards;transform:rotate("+rnd(0,360)+"deg)";
+  for(let i=0;i<70;i++){const p=document.createElement("div");p.className="confetti-piece";const size=rnd(6,11);
+    p.style.cssText="left:"+rnd(0,100)+"vw;width:"+size+"px;height:"+(size+rnd(0,6))+"px;background:"+pick(cols)+";animation-duration:"+(1.6+Math.random()*1.4)+"s;animation-delay:"+(Math.random()*0.3)+"s;transform:rotate("+rnd(0,360)+"deg)";
     box.appendChild(p);setTimeout(()=>p.remove(),3600);}
 }
 
@@ -837,46 +947,52 @@ function makeOptions(ans){const opts=new Set([ans]);const mag=Math.max(1,Math.ab
     let cand=Math.round((ans+delta)*100)/100;if(cand!==ans&&(ans%1!==0||cand%1===0))opts.add(cand);}
   const arr=Array.from(opts);for(let i=arr.length-1;i>0;i--){const j=rnd(0,i);const t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
 
-/* ============================================================ HOME ============ */
-function renderModes(){const g=document.getElementById("modeGrid");g.innerHTML="";
-  MODES.forEach(function(m){const el=document.createElement("button");el.className="mode"+(cfg.mode===m.id?" active":"");
-    el.innerHTML='<div class="top"><span class="name">'+m.name+'</span><span class="icon">'+m.icon+'</span></div><div class="desc">'+m.desc+'</div>';
-    el.onclick=function(){cfg.mode=m.id;renderModes();updateStartLabel();document.getElementById("customBox").classList.toggle("hidden",m.id!=="custom");};
-    g.appendChild(el);});}
-function updateStartLabel(){const m=MODES.find(x=>x.id===cfg.mode);document.getElementById("startBtn").innerHTML="Start "+m.name+" &rarr;";}
-function renderLevels(){const c=document.getElementById("levelChips");c.innerHTML="";
-  for(let l=1;l<=5;l++){(function(l){const b=document.createElement("button");b.className="chip"+(cfg.level===l?" active":"");b.textContent=LEVEL_NAMES[l-1];b.onclick=function(){cfg.level=l;renderLevels();};c.appendChild(b);})(l);}
-  const wrap=document.getElementById("levelWrap");wrap.style.opacity=cfg.adaptive?"0.45":"1";wrap.style.pointerEvents=cfg.adaptive?"none":"auto";document.getElementById("levelHint").style.display=cfg.adaptive?"block":"none";}
-function toggleAdaptive(){cfg.adaptive=document.getElementById("adaptive").checked;renderLevels();}
-function syncCfg(){cfg.mcq=document.getElementById("mcqToggle").checked;cfg.neg=document.getElementById("negToggle").checked;cfg.sol=document.getElementById("solToggle").checked;cfg.approx=document.getElementById("approxToggle").checked;const pq=document.getElementById("perQToggle").checked;cfg.perQ=pq?(parseInt(document.getElementById("perQSecs").value)||40):0;document.getElementById("perQSecsWrap").classList.toggle("hidden",!pq);}
-function renderTopics(){const area=document.getElementById("topicArea");area.innerHTML="";
-  GROUPS.forEach(function(grp){const gk=ALL_KEYS.filter(k=>GEN[k].group===grp);const allOn=gk.every(k=>cfg.keys.has(k));
-    const wrap=document.createElement("div");wrap.className="grp";
-    const head=document.createElement("button");head.className="grphead"+(allOn?" allon":"");head.textContent=grp+" "+(allOn?"\u25aa":"\u25ab");
-    head.onclick=function(){const on=gk.every(k=>cfg.keys.has(k));const next=new Set(cfg.keys);gk.forEach(k=>on?next.delete(k):next.add(k));if(next.size>0)cfg.keys=next;renderTopics();};
-    const chips=document.createElement("div");chips.className="grpchips";
-    gk.forEach(function(k){const b=document.createElement("button");b.className="chip"+(cfg.keys.has(k)?" active":"");b.textContent=GEN[k].label;
-      b.onclick=function(){const n=new Set(cfg.keys);n.has(k)?n.delete(k):n.add(k);if(n.size>0){cfg.keys=n;renderTopics();}};chips.appendChild(b);});
-    wrap.appendChild(head);wrap.appendChild(chips);area.appendChild(wrap);});}
 function masteryColor(p){if(p>=85)return"var(--green)";if(p>=60)return"var(--amber)";return"var(--red)";}
 function weakKeys(threshold){return Object.keys(store.mastery).filter(function(k){const m=store.mastery[k];return GEN[k]&&m.total>=3&&(m.correct/m.total*100)<threshold;});}
-function renderWeak(){const sub=document.getElementById("weakSub");const btn=document.getElementById("weakBtn");const wk=weakKeys(70);
-  if(wk.length===0){sub.textContent=Object.keys(store.mastery).length?"No weak topics — nice!":"Build your history first";btn.disabled=true;}
-  else{sub.textContent=wk.length+" topic"+(wk.length>1?"s":"")+" below 70%";btn.disabled=false;}}
-function renderMastery(){const box=document.getElementById("masteryBox"),list=document.getElementById("masteryList");
+
+/* ============================================================ HOME ============ */
+function renderHome(){
+  renderGoal();renderDailyTile();renderSRTile();renderWeakTile();
+  document.getElementById("greetHi").textContent=(store.user&&store.user.name)?("Hi "+store.user.name.split(" ")[0]+" \u2014 ready to drill?"):"Ready to drill?";
+}
+function renderDailyTile(){const sub=document.getElementById("dailySub");if(dailyDoneToday())sub.textContent="Done today \u2713"+(store.dailyScore!=null?" ("+store.dailyScore+"/15)":"");else sub.textContent="Same 15 for everyone";}
+function renderSRTile(){srInit();const due=srDueKeys().length;const sub=document.getElementById("srSub");const tile=document.getElementById("srTile");if(due>0){sub.textContent=due+" topic"+(due>1?"s":"")+" due now";tile.disabled=false;}else{const weak=srWeakKeys().length;if(weak>0){sub.textContent=weak+" weak to review";tile.disabled=false;}else{sub.textContent="Nothing due yet";tile.disabled=true;}}}
+function renderWeakTile(){const sub=document.getElementById("weakSub");const tile=document.getElementById("weakTile");const wk=weakKeys(70);if(wk.length===0){sub.textContent=Object.keys(store.mastery).length?"No weak topics \u2014 nice!":"Build history first";tile.disabled=true;}else{sub.textContent=wk.length+" topic"+(wk.length>1?"s":"")+" below 70%";tile.disabled=false;}}
+function renderGoal(){rollDay();const done=Math.min(store.todayCount||0,DAILY_GOAL_C);const pct=done/DAILY_GOAL_C;const r=22,circ=2*Math.PI*r;const svg=document.getElementById("goalRing");
+  svg.innerHTML='<circle cx="26" cy="26" r="'+r+'" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="5"/><circle cx="26" cy="26" r="'+r+'" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ*(1-pct))+'" transform="rotate(-90 26 26)"/><text x="26" y="30" text-anchor="middle" font-size="12" font-family="DM Mono, monospace" fill="#fff" font-weight="700">'+(store.todayCount||0)+'</text>';
+  document.getElementById("goalSub").textContent=(store.todayCount||0)+"/"+DAILY_GOAL_C;
+  document.getElementById("streakNum").textContent=store.streakDays||0;}
+
+/* ---- page navigation ---- */
+function show(id){["home","engine","results"].forEach(s=>document.getElementById(s).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
+function openPage(id){document.getElementById(id).classList.remove("hidden");}
+function closePage(id){document.getElementById(id).classList.add("hidden");}
+function goHome(){clearTimer();clearQt();["wizard","leaderboard","analysis","testDetail","formulaScreen"].forEach(function(p){document.getElementById(p).classList.add("hidden");});renderHome();show("home");}
+
+/* ---- Leaderboard page ---- */
+function openLeaderboard(){if(!store.user){openLogin();return;}lbTab("global");openPage("leaderboard");renderMyGroups();}
+
+/* ---- Analysis page ---- */
+function openAnalysis(){renderChart();renderMastery();renderRecent();const has=(store.history&&store.history.length>0);document.getElementById("analysisEmpty").classList.toggle("hidden",has);openPage("analysis");}
+function renderMastery(){const box=document.getElementById("analysisMasteryBox"),list=document.getElementById("masteryList");
   const keys=Object.keys(store.mastery).filter(k=>store.mastery[k].total>=3&&GEN[k]);
   if(keys.length===0){box.classList.add("hidden");return;}box.classList.remove("hidden");list.innerHTML="";
   keys.map(k=>({k:k,m:store.mastery[k],pct:Math.round(store.mastery[k].correct/store.mastery[k].total*100)})).sort((a,b)=>a.pct-b.pct).forEach(function(row){
     const el=document.createElement("div");el.className="masteryrow";
     el.innerHTML='<span class="mlab">'+GEN[row.k].label+'</span><span class="mbar"><span class="mfill" style="width:'+row.pct+'%;background:'+masteryColor(row.pct)+'"></span></span><span class="mpct">'+row.pct+'% ('+row.m.total+')</span>';list.appendChild(el);});}
-function renderRecent(){const box=document.getElementById("recentBox"),list=document.getElementById("recentList");
+function renderRecent(){const box=document.getElementById("analysisRecentBox"),list=document.getElementById("recentList");
   if(!store.history||store.history.length===0){box.classList.add("hidden");return;}box.classList.remove("hidden");list.innerHTML="";
-  store.history.slice(0,6).forEach(function(h){const row=document.createElement("div");row.className="recentrow";const pct=Math.round(h.correct/h.total*100);const extra=h.mode==="speed"?(h.correct+" solved"):(pct+"%");
-    row.innerHTML='<span class="m">'+h.mode+'</span><span class="s">'+h.correct+'/'+h.total+' \u00b7 '+extra+(h.neg?' \u00b7 '+h.score:'')+'</span>';list.appendChild(row);});}
-function renderChart(){const box=document.getElementById("chartBox"),svg=document.getElementById("progChart");
+  store.history.slice(0,20).forEach(function(h,i){const row=document.createElement("button");row.className="recentrow";const pct=Math.round(h.correct/h.total*100);const extra=h.mode==="speed"?(h.correct+" solved"):(pct+"%");
+    const when=h.when?timeAgo(h.when):"";
+    const hasDetail=h.attempts&&h.attempts.length;
+    row.innerHTML='<div><span class="m">'+h.mode+'</span><span class="when">'+when+'</span></div><div class="s">'+h.correct+'/'+h.total+' \u00b7 '+extra+(hasDetail?' <span class="chev">\u203a</span>':'')+'</div>';
+    if(hasDetail)row.onclick=function(){openTestDetail(i);};else row.disabled=true;
+    list.appendChild(row);});}
+function timeAgo(ts){const d=Math.floor((Date.now()-ts)/1000);if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";return Math.floor(d/86400)+"d ago";}
+function renderChart(){const box=document.getElementById("analysisChartBox"),svg=document.getElementById("progChart");
   const data=store.history.filter(h=>h.mode!=="speed").slice(0,20).reverse();
   if(data.length<2){box.classList.add("hidden");return;}box.classList.remove("hidden");
-  const W=340,H=150,pad=8;const n=data.length;const xstep=(W-2*pad)/(n-1);
+  const W=320,H=150,pad=8;const n=data.length;const xstep=(W-2*pad)/(n-1);
   const accPts=data.map((h,i)=>[pad+i*xstep, H-pad-(Math.round(h.correct/h.total*100)/100)*(H-2*pad)]);
   const spd=data.map(h=>h.avgT||0);const maxS=Math.max(6,Math.max.apply(null,spd));
   const spdPts=data.map((h,i)=>[pad+i*xstep, H-pad-((maxS-(h.avgT||0))/maxS)*(H-2*pad)]);
@@ -886,16 +1002,161 @@ function renderChart(){const box=document.getElementById("chartBox"),svg=documen
   s+='<path d="'+path(accPts)+'" fill="none" stroke="var(--teal)" stroke-width="2.5"/>';
   accPts.forEach(pt=>{s+='<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="2.5" fill="var(--teal)"/>';});
   svg.innerHTML=s;}
-function renderGoal(){rollDay();const done=Math.min(store.todayCount||0,DAILY_GOAL_C);const pct=done/DAILY_GOAL_C;const r=21,circ=2*Math.PI*r;const svg=document.getElementById("goalRing");
-  svg.innerHTML='<circle cx="25" cy="25" r="'+r+'" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="25" cy="25" r="'+r+'" fill="none" stroke="var(--teal)" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+(circ*(1-pct))+'" transform="rotate(-90 25 25)"/><text x="25" y="29" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="var(--ink)">'+(store.todayCount||0)+'</text>';
-  document.getElementById("goalSub").textContent=(store.todayCount||0)+" / "+DAILY_GOAL_C+" today"+((store.todayCount||0)>=DAILY_GOAL_C?"  \u2705":"");
-  document.getElementById("streakNum").textContent=store.streakDays||0;}
 
-/* ============================================================ NAV ============ */
-function show(id){["home","engine","results"].forEach(s=>document.getElementById(s).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.getElementById("homeBtn").classList.toggle("hidden",id==="home");}
-function goHome(){clearTimer();clearQt();renderModes();renderLevels();renderTopics();renderWeak();renderDailyBtn();renderSRBtn();renderChart();renderMastery();renderRecent();renderGoal();updateStartLabel();document.getElementById("customBox").classList.toggle("hidden",cfg.mode!=="custom");show("home");}
-function renderDailyBtn(){const sub=document.getElementById("dailySub");if(dailyDoneToday())sub.textContent="Done today ✓ score "+(store.dailyScore!=null?store.dailyScore:"");else sub.textContent="Same 15 for everyone today";}
-function renderSRBtn(){srInit();const due=srDueKeys().length;const sub=document.getElementById("srSub");const btn=document.getElementById("srBtn");if(due>0){sub.textContent=due+" topic"+(due>1?"s":"")+" due now";btn.disabled=false;}else{const weak=srWeakKeys().length;if(weak>0){sub.textContent=weak+" weak to review";btn.disabled=false;}else{sub.textContent="Nothing due yet";btn.style.opacity="0.6";}}}
+/* ---- Test detail (full per-question analysis) ---- */
+function openTestDetail(historyIdx){
+  const h=store.history[historyIdx];if(!h||!h.attempts){toast("No detailed data for this test.");return;}
+  const tot=h.total,acc=Math.round(h.correct/tot*100);
+  document.getElementById("tdEyebrow").textContent=h.mode+(h.when?" \u00b7 "+timeAgo(h.when):"");
+  document.getElementById("tdBig").textContent=h.mode==="speed"?h.correct:acc+"%";
+  document.getElementById("tdSub").textContent=h.correct+" of "+tot+" correct \u00b7 avg "+(h.avgT||0)+"s";
+  const cells=[["Right",h.correct],["Wrong",h.wrong],["Accuracy",acc+"%"],["Avg time",(h.avgT||0)+"s"]];
+  const fastest=h.attempts.reduce((m,a)=>Math.min(m,a.secs),99),slowest=h.attempts.reduce((m,a)=>Math.max(m,a.secs),0);
+  cells.push(["Fastest",fastest.toFixed(1)+"s"]);cells.push(["Slowest",slowest.toFixed(1)+"s"]);
+  const sg=document.getElementById("tdScoreGrid");sg.innerHTML="";cells.forEach(function(c){const el=document.createElement("div");el.className="scorecell";el.innerHTML='<div class="cv">'+c[1]+'</div><div class="cl">'+c[0]+'</div>';sg.appendChild(el);});
+  renderSpeedChart(h.attempts);
+  const qc=document.getElementById("tdQuestions");qc.innerHTML="";
+  h.attempts.forEach(function(a,i){const el=document.createElement("div");el.className="aqrow";
+    let ansLine;if(a.ok)ansLine='<span class="cr">\u2713 '+a.a+'</span>';else ansLine=(a.given!=null&&a.given!==undefined&&a.given!==""?'<span class="yr">'+a.given+'</span>':'<span style="color:var(--muted)">skipped</span>')+' <span class="cr">= '+a.a+'</span>';
+    let sol='';if(a.steps&&a.steps.length)sol='<div class="aqsteps">'+a.steps.join(" \u2192 ")+(a.trick?'<div class="tr">\ud83d\udca1 '+a.trick+'</div>':'')+'</div>';
+    el.innerHTML='<div class="aqtop"><span class="aqnum '+(a.ok?"ok":"no")+'">'+(i+1)+'</span><span class="aqq">'+a.q+'</span><span class="aqtime">'+a.secs.toFixed(1)+'s</span></div><div class="aqans">'+ansLine+'</div>'+sol;
+    qc.appendChild(el);});
+  openPage("testDetail");
+}
+function openLastTestDetail(){openTestDetail(0);}
+function renderSpeedChart(attempts){
+  const svg=document.getElementById("tdSpeedChart");const W=320,H=160,pad=10;const n=attempts.length;
+  if(n===0){svg.innerHTML="";return;}
+  const times=attempts.map(a=>a.secs);const maxT=Math.max(2,Math.max.apply(null,times));
+  const avg=times.reduce((s,v)=>s+v,0)/n;
+  const bw=(W-2*pad)/n;
+  let s='';
+  const avgY=H-pad-(avg/maxT)*(H-2*pad);
+  s+='<line x1="'+pad+'" y1="'+avgY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+avgY.toFixed(1)+'" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 3"/>';
+  attempts.forEach(function(a,i){const bh=(a.secs/maxT)*(H-2*pad);const x=pad+i*bw+1;const y=H-pad-bh;
+    s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.max(1,(bw-2)).toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="2" fill="'+(a.ok?"var(--teal)":"var(--red)")+'" opacity="0.85"/>';});
+  s+='<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="var(--line)"/>';
+  svg.innerHTML=s;
+}
+
+/* ============================================================ WIZARD ============ */
+let wiz={purpose:"practice",step:0,steps:["mode","format","difficulty","topics"],draft:{}};
+function wizInit(purpose){
+  wiz={purpose:purpose,step:0,steps:["mode","format","difficulty","topics"],draft:{
+    mode:purpose==="challenge_set"?"custom":cfg.mode,
+    mcq:cfg.mcq,neg:cfg.neg,sol:cfg.sol,approx:cfg.approx,perQ:cfg.perQ,adaptive:cfg.adaptive,
+    level:cfg.level,customCount:cfg.customCount,customMins:cfg.customMins,
+    keys:new Set(cfg.keys.size?cfg.keys:ALL_KEYS)
+  }};
+}
+function openWizard(purpose){
+  wizInit(purpose);
+  document.getElementById("wizTitle").textContent=purpose==="challenge_set"?"Create a question set":"Set up practice";
+  document.getElementById("wizNextBtn").textContent="Next";
+  goHomeNoRender();openPage("wizard");wizRender();
+}
+function goHomeNoRender(){clearTimer();clearQt();["leaderboard","analysis","testDetail","formulaScreen"].forEach(function(p){document.getElementById(p).classList.add("hidden");});}
+function wizBackOrClose(){if(wiz.step===0){closePage("wizard");if(wiz.purpose==="challenge_set")openPage("leaderboard");else show("home");}else wizBack();}
+function wizBack(){if(wiz.step>0){wiz.step--;wizRender();}}
+function wizNext(){
+  if(!wizValidateStep())return;
+  if(wiz.step<wiz.steps.length-1){wiz.step++;wizRender();}
+  else wizFinish();
+}
+function wizValidateStep(){
+  const s=wiz.steps[wiz.step];
+  if(s==="topics"&&wiz.draft.keys.size===0){toast("Pick at least one topic.");return false;}
+  return true;
+}
+function wizRender(){
+  const s=wiz.steps[wiz.step];
+  document.getElementById("wizProg").innerHTML=wiz.steps.map((st,i)=>'<div class="seg'+(i<=wiz.step?" on":"")+'"></div>').join("");
+  document.getElementById("wizPrevBtn").classList.toggle("hidden",wiz.step===0);
+  document.getElementById("wizNextBtn").textContent=wiz.step===wiz.steps.length-1?(wiz.purpose==="challenge_set"?"Create & share":"Start"):"Next";
+  const c=document.getElementById("wizContent");
+  if(s==="mode")c.innerHTML=wizStepMode();
+  else if(s==="format")c.innerHTML=wizStepFormat();
+  else if(s==="difficulty")c.innerHTML=wizStepDifficulty();
+  else if(s==="topics")c.innerHTML=wizStepTopics();
+  wizBindStep(s);
+}
+function wizStepMode(){
+  const list=wiz.purpose==="challenge_set"?MODES.filter(m=>m.id!=="formula"):MODES;
+  let h='<div class="wizstep"><div class="wizh">Choose a mode</div><p class="wizsub">What kind of session do you want?</p><div class="modelist">';
+  list.forEach(function(m){h+='<button type="button" class="modeopt'+(wiz.draft.mode===m.id?" active":"")+'" data-mode="'+m.id+'"><span class="mi">'+m.icon+'</span><span class="mtext"><span class="mn">'+m.name+'</span><span class="md">'+m.desc+'</span></span><span class="mcheck">\u2713</span></button>';});
+  h+='</div>';
+  if(wiz.draft.mode==="custom")h+='<div class="customrow"><div class="customfield"><label>Questions</label><input type="number" id="wizCustomCount" min="1" max="100" value="'+wiz.draft.customCount+'"></div><div class="customfield"><label>Minutes (0 = untimed)</label><input type="number" id="wizCustomMins" min="0" max="120" value="'+wiz.draft.customMins+'"></div></div>';
+  h+='</div>';
+  return h;
+}
+function wizStepFormat(){
+  return '<div class="wizstep"><div class="wizh">Format &amp; scoring</div><p class="wizsub">Turn on anything you want for this session.</p>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Multiple choice</span><span class="tdesc">Pick from 4 options instead of typing.</span></span><span class="switch"><input type="checkbox" id="wizMcq" '+(wiz.draft.mcq?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Negative marking</span><span class="tdesc">&minus;0.5 for each wrong answer.</span></span><span class="switch"><input type="checkbox" id="wizNeg" '+(wiz.draft.neg?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Show solution on mistakes</span><span class="tdesc">See the trick right after a wrong answer.</span></span><span class="switch"><input type="checkbox" id="wizSol" '+(wiz.draft.sol?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Approx mode</span><span class="tdesc">Accepts answers within 2% &mdash; trains estimation.</span></span><span class="switch"><input type="checkbox" id="wizApprox" '+(wiz.draft.approx?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Per-question timer</span><span class="tdesc">Auto-marks wrong if you run out of time.</span></span><span class="switch"><input type="checkbox" id="wizPerQ" '+(wiz.draft.perQ?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<div class="subfield" id="wizPerQSecsWrap" style="'+(wiz.draft.perQ?"":"display:none")+'"><input type="number" id="wizPerQSecs" min="10" max="120" value="'+(wiz.draft.perQ||40)+'"> seconds each</div>'+
+    '</div>';
+}
+function wizStepDifficulty(){
+  let h='<div class="wizstep"><div class="wizh">Difficulty</div><p class="wizsub">Adaptive climbs with a 4-answer streak and drops on a miss.</p>'+
+    '<label class="togglecard"><span class="tinfo"><span class="tlab">Adaptive difficulty</span><span class="tdesc">Automatically adjusts as you play.</span></span><span class="switch"><input type="checkbox" id="wizAdaptive" '+(wiz.draft.adaptive?"checked":"")+'><span class="slider"></span></span></label>'+
+    '<div class="levelrow" id="wizLevelRow" style="'+(wiz.draft.adaptive?"opacity:.45;pointer-events:none":"")+'">';
+  LEVEL_NAMES.forEach(function(name,i){const lv=i+1;h+='<button type="button" class="chip'+(wiz.draft.level===lv?" active":"")+'" data-lvl="'+lv+'">'+name+'</button>';});
+  h+='</div></div>';
+  return h;
+}
+function wizStepTopics(){
+  let h='<div class="wizstep"><div class="wizh">Topics</div><p class="wizsub">Pick what to practice.</p>'+
+    '<div class="topicactions"><button type="button" class="miniaction" id="wizAllOn">Select all</button><button type="button" class="miniaction" id="wizAllOff">Clear all</button></div>';
+  GROUPS.forEach(function(g){
+    h+='<div class="grp"><div class="grphead">'+g+'</div><div class="grpchips">';
+    ALL_KEYS.filter(k=>GEN[k].group===g).forEach(function(k){h+='<button type="button" class="chip'+(wiz.draft.keys.has(k)?" active":"")+'" data-key="'+k+'">'+GEN[k].label+'</button>';});
+    h+='</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function wizBindStep(s){
+  if(s==="mode"){
+    document.querySelectorAll("#wizContent .modeopt").forEach(function(b){b.onclick=function(){wiz.draft.mode=b.getAttribute("data-mode");wizRender();};});
+    const cc=document.getElementById("wizCustomCount");if(cc)cc.onchange=function(){wiz.draft.customCount=Math.max(1,Math.min(100,parseInt(cc.value)||20));};
+    const cm=document.getElementById("wizCustomMins");if(cm)cm.onchange=function(){wiz.draft.customMins=Math.max(0,parseInt(cm.value)||0);};
+  }else if(s==="format"){
+    document.getElementById("wizMcq").onchange=function(e){wiz.draft.mcq=e.target.checked;};
+    document.getElementById("wizNeg").onchange=function(e){wiz.draft.neg=e.target.checked;};
+    document.getElementById("wizSol").onchange=function(e){wiz.draft.sol=e.target.checked;};
+    document.getElementById("wizApprox").onchange=function(e){wiz.draft.approx=e.target.checked;};
+    document.getElementById("wizPerQ").onchange=function(e){wiz.draft.perQ=e.target.checked?(wiz.draft.perQ||40):0;document.getElementById("wizPerQSecsWrap").style.display=e.target.checked?"flex":"none";};
+    const ps=document.getElementById("wizPerQSecs");if(ps)ps.onchange=function(){wiz.draft.perQ=parseInt(ps.value)||40;};
+  }else if(s==="difficulty"){
+    document.getElementById("wizAdaptive").onchange=function(e){wiz.draft.adaptive=e.target.checked;document.getElementById("wizLevelRow").style.cssText=e.target.checked?"opacity:.45;pointer-events:none":"";};
+    document.querySelectorAll("#wizLevelRow .chip").forEach(function(b){b.onclick=function(){wiz.draft.level=parseInt(b.getAttribute("data-lvl"));wizRender();};});
+  }else if(s==="topics"){
+    document.querySelectorAll("#wizContent [data-key]").forEach(function(b){b.onclick=function(){const k=b.getAttribute("data-key");if(wiz.draft.keys.has(k))wiz.draft.keys.delete(k);else wiz.draft.keys.add(k);b.classList.toggle("active");};});
+    document.getElementById("wizAllOn").onclick=function(){wiz.draft.keys=new Set(ALL_KEYS);wizRender();};
+    document.getElementById("wizAllOff").onclick=function(){wiz.draft.keys=new Set();wizRender();};
+  }
+}
+function wizApplyToCfg(){
+  cfg.mode=wiz.draft.mode;cfg.mcq=wiz.draft.mcq;cfg.neg=wiz.draft.neg;cfg.sol=wiz.draft.sol;cfg.approx=wiz.draft.approx;cfg.perQ=wiz.draft.perQ;cfg.adaptive=wiz.draft.adaptive;cfg.level=wiz.draft.level;cfg.customCount=wiz.draft.customCount;cfg.customMins=wiz.draft.customMins;cfg.keys=wiz.draft.keys;
+}
+function wizFinish(){
+  wizApplyToCfg();
+  closePage("wizard");
+  if(wiz.purpose==="challenge_set"){wizCreateChallengeSet();}
+  else{startSession();}
+}
+function wizCreateChallengeSet(){
+  openPage("leaderboard");lbTab("challenge");
+  const out=document.getElementById("challengeCreateOut");out.innerHTML='<p class="panehint">Creating\u2026</p>';
+  const opts={count:cfg.customCount||10,level:cfg.adaptive?3:cfg.level,hours:48,keys:Array.from(cfg.keys)};
+  createChallenge("set",opts,function(ok,id){
+    if(!ok){out.innerHTML='<p class="panehint">'+(id||"Failed \u2014 check your connection.")+'</p>';return;}
+    out.innerHTML='<div class="fcard"><div class="fname">Your question set is ready</div><div class="fnote">Share this code with friends (expires in 48h):</div><div class="codebox" onclick="copyText(\''+id+'\')">'+id+'</div><div class="fnote">Tap the code to copy. Or share it via a friend group below.</div></div>';
+  });
+}
 
 /* ============================================================ SESSIONS ============ */
 function baseRun(extra){return Object.assign({idx:0,correct:0,wrong:0,streak:0,attempts:[],locked:false,current:null,score:0,mcq:cfg.mcq,neg:cfg.neg,sol:cfg.sol,perQ:cfg.perQ,approx:cfg.approx,adaptive:cfg.adaptive,level:cfg.adaptive?2:cfg.level},extra);}
@@ -906,10 +1167,9 @@ function startSession(){
   else if(mode==="quiz"){total=20;timer=null;}
   else if(mode==="speed"){total=Infinity;timer=60;}
   else if(mode==="mock"){total=25;timer=15*60;}
-  else if(mode==="custom"){total=Math.max(1,Math.min(100,parseInt(document.getElementById("customCount").value)||20));const mn=Math.max(0,parseInt(document.getElementById("customMins").value)||0);timer=mn>0?mn*60:null;}
+  else if(mode==="custom"){total=Math.max(1,Math.min(100,cfg.customCount||20));const mn=Math.max(0,cfg.customMins||0);timer=mn>0?mn*60:null;}
   else if(mode==="pyq"){const p=PYQ.slice();for(let i=p.length-1;i>0;i--){const j=rnd(0,i);const t=p[i];p[i]=p[j];p[j]=t;}pool=p;total=Math.min(15,p.length);timer=null;}
   run=baseRun({mode:mode,keys:keys,total:total,timer:timer,timeLeft:timer,pyqPool:pool,fixedList:fixedList});
-  // per-question timer doesn't combine with speed (already fast) or practice (untimed learning)
   if(mode==="speed"||mode==="practice")run.perQ=0;
   launch();
 }
@@ -960,7 +1220,6 @@ function nextQuestion(){
   const fb=document.getElementById("fbline");fb.className="fbline";fb.textContent="";
   const sb=document.getElementById("solBox");sb.className="solbox";sb.innerHTML="";
   const isText=!!run.current.isText;
-  // formula recall is always MCQ (string options); numeric questions honor run.mcq
   const useMcq=run.mcq||isText;
   if(useMcq){
     document.getElementById("typeArea").classList.add("hidden");document.getElementById("keypad").classList.remove("show");
@@ -974,7 +1233,6 @@ function nextQuestion(){
     document.getElementById("keypad").classList.toggle("show",useKeypad);
     if(!useKeypad)setTimeout(()=>inp.focus(),30);
   }
-  // per-question timer
   if(run.perQ){run.qLeft=run.perQ;renderQClock();}
   startQt();
 }
@@ -983,7 +1241,7 @@ function fmtTime(s){return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 function updateStatus(){
   document.getElementById("sCorrect").textContent=run.correct;document.getElementById("sWrong").textContent=run.wrong;
   const tot=run.correct+run.wrong,acc=tot>0?Math.round(run.correct/tot*100):100;
-  document.getElementById("sAcc").textContent=acc+"%";document.getElementById("sScore").textContent=run.score.toFixed(run.score%1?1:0);document.getElementById("sLvl").textContent=run.level;
+  document.getElementById("sAcc").textContent=acc+"%";document.getElementById("sScore").textContent=run.score.toFixed(run.score%1?1:0);document.getElementById("sLvl").textContent=LEVEL_NAMES[(run.level||1)-1]||run.level;
   if(run.timeLeft!=null){const t=document.getElementById("timer");t.textContent=fmtTime(run.timeLeft);t.style.color=run.timeLeft<=10?"var(--red)":"var(--ink)";}
   if(run.total!==Infinity){document.getElementById("counter").textContent=Math.min(run.idx+1,run.total)+"/"+run.total;document.getElementById("progressBar").style.width=(run.idx/run.total*100)+"%";}
   const sb=document.getElementById("streakBox");if(run.streak>=3){sb.classList.remove("hidden");sb.textContent="\ud83d\udd25 "+run.streak+" in a row";}else sb.classList.add("hidden");}
@@ -1024,7 +1282,6 @@ function submitTyped(){if(run.locked)return;const raw=document.getElementById("a
 function chooseMCQ(opt,btn){if(run.locked)return;run.locked=true;clearQt();run._given=opt;const ok=matchAns(opt);document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});if(!ok)btn.classList.add("chosenwrong");grade(ok);}
 function skipQuestion(){if(run.locked)return;run.locked=true;clearQt();run._given=null;if(!run.mcq&&!(run.current&&run.current.isText)){document.getElementById("answer").disabled=true;document.getElementById("submitBtn").disabled=true;}else document.querySelectorAll("#mcqArea .mcqbtn").forEach(function(b){b.disabled=true;if(matchAns(b.getAttribute("data-opt")))b.classList.add("correct");});grade(false);}
 
-/* keypad */
 function kp(d){const inp=document.getElementById("answer");if(inp.disabled)return;if(d==="."&&inp.value.includes("."))return;inp.value+=d;}
 function kpDel(){const inp=document.getElementById("answer");if(inp.disabled)return;inp.value=inp.value.slice(0,-1);}
 
@@ -1033,16 +1290,13 @@ function endSession(){
   const tot=run.correct+run.wrong;const avgT=run.attempts.length?run.attempts.reduce((s,a)=>s+a.secs,0)/run.attempts.length:0;
   const acc=Math.round(run.correct/Math.max(1,tot)*100);
   const score=run.neg?Math.round(run.score*10)/10:(run.mode==="speed"?run.correct:acc);
-  store.history.unshift({mode:run.mode,total:Math.max(1,tot),correct:run.correct,wrong:run.wrong,score:score,neg:run.neg,avgT:Math.round(avgT*10)/10});
+  store.history.unshift({mode:run.mode,total:Math.max(1,tot),correct:run.correct,wrong:run.wrong,score:score,neg:run.neg,avgT:Math.round(avgT*10)/10,when:nowTs(),attempts:run.attempts.slice(0,60)});
   store.history=store.history.slice(0,40);
   const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:acc);
   let isBest=false;if(!store.best)store.best={};if(store.best[bkey]==null||bval>store.best[bkey]){if(store.history.length>1||store.best[bkey]!=null)isBest=(store.best[bkey]!=null);store.best[bkey]=bval;}
   run._isBest=isBest;run._avgT=avgT;run._acc=acc;
-  // daily challenge: mark done + record score for leaderboard
   if(run.mode==="daily"){store.dailyDone=dateSeed();store.dailyScore=run.correct;if(cloudReady)submitDaily(run.correct);}
-  // update global leaderboard best (speed count / quiz acc)
   if(cloudReady&&(run.mode==="quiz"||run.mode==="speed"||run.mode==="mock")){submitLeaderboard(run.mode,bval);}
-  // challenge set result
   if(run.mode==="challenge"&&run.challengeMeta){run._challengeResult={score:run.correct,total:tot};if(cloudReady)submitChallengeResult(run.challengeMeta,run.correct,tot);}
   lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick,isText:a.isText,mcqOptions:a.mcqOptions}));
   recordActivity(tot);saveStore();renderResults();
@@ -1063,29 +1317,31 @@ function renderResults(){
   const bb=document.getElementById("bestBadge");bb.innerHTML=run._isBest?'<span class="best">\u2b50 New personal best</span>':'';
   const cells=[["Correct",run.correct],["Wrong",run.wrong],["Accuracy",acc+"%"],["Avg time",run._avgT.toFixed(1)+"s"]];if(run.neg)cells.push(["Net score",Math.round(run.score*10)/10]);
   const sg=document.getElementById("scoreGrid");sg.innerHTML="";cells.forEach(function(c){const el=document.createElement("div");el.className="scorecell";el.innerHTML='<div class="cv">'+c[1]+'</div><div class="cl">'+c[0]+'</div>';sg.appendChild(el);});
-  // topic breakdown
+  const hasAttempts=run.attempts&&run.attempts.length>0;
+  document.getElementById("rFullAnalysisBtn").classList.toggle("hidden",!hasAttempts);
+  const cb=document.getElementById("rChallengeBox");
+  if(run._challengeResult)cb.innerHTML='<div class="fcard"><div class="fname">Challenge result submitted</div><div class="fnote">You scored '+run._challengeResult.score+'/'+run._challengeResult.total+'. Check the leaderboard to see how you rank.</div></div>';
+  else cb.innerHTML="";
   const byTopic={};run.attempts.forEach(function(a){const L=a.label||"Other";if(!byTopic[L])byTopic[L]={c:0,t:0};byTopic[L].t++;if(a.ok)byTopic[L].c++;});
   const tks=Object.keys(byTopic);const tb=document.getElementById("topicBody");tb.innerHTML="";
   tks.map(k=>({k:k,pct:Math.round(byTopic[k].c/byTopic[k].t*100),d:byTopic[k]})).sort((a,b)=>a.pct-b.pct).forEach(function(row){const el=document.createElement("div");el.className="masteryrow";el.innerHTML='<span class="mlab">'+row.k+'</span><span class="mbar"><span class="mfill" style="width:'+row.pct+'%;background:'+masteryColor(row.pct)+'"></span></span><span class="mpct">'+row.d.c+'/'+row.d.t+'</span>';tb.appendChild(el);});
   document.getElementById("topicExp").classList.toggle("hidden",tks.length<2);
-  // review
   const wrongOnes=run.attempts.filter(a=>!a.ok);const rb=document.getElementById("reviewBody");rb.innerHTML="";
   document.getElementById("reviewExp").classList.toggle("hidden",wrongOnes.length===0);
   document.getElementById("redoWrongBtn").classList.toggle("hidden",wrongOnes.length===0);
   document.getElementById("reviewExpLabel").textContent="Review mistakes ("+wrongOnes.length+")";
-  wrongOnes.forEach(function(a){const row=document.createElement("div");row.className="reviewrow";const given=(a.given!=null&&a.given!==undefined)?'<span class="given">'+a.given+'</span>':'';
+  wrongOnes.forEach(function(a){const row=document.createElement("div");row.className="reviewrow";const given=(a.given!=null&&a.given!==undefined&&a.given!=="")?'<span class="given">'+a.given+'</span>':'';
     let sol="";if(a.steps&&a.steps.length)sol='<div style="font-size:11.5px;color:var(--muted);margin-top:4px;font-family:DM Mono,monospace">'+a.steps.join(" \u2192 ")+'</div>';
     row.innerHTML='<div class="rq">'+a.q+sol+'</div><span>'+given+'<span class="correct">= '+a.a+'</span></span>';rb.appendChild(row);});
-  // reset expanders closed
   expState={topic:false,review:false};document.getElementById("topicExp").classList.remove("open");document.getElementById("topicBody").classList.remove("show");document.getElementById("reviewExp").classList.remove("open");document.getElementById("reviewBody").classList.remove("show");
   renderGoal();
-  // confetti on best or goal met
   if(run._isBest||(store.todayCount>=DAILY_GOAL_C&&store.todayCount-tot<DAILY_GOAL_C)){confetti();sndCheer();}
   show("results");
 }
 function againSession(){
   if(run.mode==="weak"){startWeak();return;}
   if(run.mode==="redo"){startRedoWrong();return;}
+  if(run.mode==="daily"||run.mode==="sr"||run.mode==="challenge"||run.mode==="formula"){goHome();return;}
   cfg.mode=run.mode;startSession();
 }
 
@@ -1116,7 +1372,6 @@ function loginNext(){
     const code=document.getElementById("loginCode").value.trim();
     if(!/^\d{4}$/.test(code)){err.textContent="Code must be exactly 4 digits.";return;}
     err.textContent="";loginState.code=code;
-    // look up name for this code
     const proceed=function(name){
       loginState.knownName=name||null;
       document.getElementById("codeStep").classList.add("hidden");
@@ -1131,7 +1386,7 @@ function loginNext(){
       }else{
         document.getElementById("welcomeBack").classList.add("hidden");
         document.getElementById("nameFieldWrap").classList.remove("hidden");
-        document.getElementById("loginDesc").textContent="New code — what should we call you?";
+        document.getElementById("loginDesc").textContent="New code \u2014 what should we call you?";
         setTimeout(function(){const n=document.getElementById("loginName");if(n&&!('ontouchstart' in window))n.focus();},50);
       }
       loginState.step="name";
@@ -1141,7 +1396,6 @@ function loginNext(){
       document.getElementById("syncStatus").textContent="Checking code\u2026";
       lookupName(code,function(name){document.getElementById("syncStatus").textContent="";proceed(name);});
     }else if(CLOUD_ENABLED){
-      // cloud still connecting — wait up to 4s for it
       document.getElementById("syncStatus").textContent="Connecting\u2026";
       let waited=0;const iv=setInterval(function(){waited+=200;
         if(cloudReady){clearInterval(iv);document.getElementById("syncStatus").textContent="Checking code\u2026";lookupName(code,function(name){document.getElementById("syncStatus").textContent="";proceed(name);});}
@@ -1152,7 +1406,6 @@ function loginNext(){
     }
     return;
   }
-  // step: name
   let name=loginState.knownName;
   if(!name){name=document.getElementById("loginName").value.trim();if(name.length<1){err.textContent="Enter a name.";return;}}
   err.textContent="";
@@ -1170,26 +1423,15 @@ function commitLogin(code,name){
   const ss=document.getElementById("syncStatus");
   if(cloudReady){
     ss.textContent="Loading\u2026";
-    // PULL FIRST — do not clear or push anything until we know what's in the cloud.
     pullCloud(function(ok,existed){
-      if(ok&&existed){
-        // cloud had data — pullCloud already loaded it into store. Safe to push (writes same data back with name).
-        ss.textContent="Loaded your saved data.";
-        saveStore();
-      }else if(ok&&!existed){
-        // brand-new code with no cloud record. If we were switching accounts, start clean.
+      if(ok&&existed){ss.textContent="Loaded your saved data.";saveStore();}
+      else if(ok&&!existed){
         if(switching){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
-        ss.textContent="New profile created.";
-        saveStore(); // now safe to create the record
-      }else{
-        // cloud unreachable — DON'T wipe, DON'T push. Keep whatever is local, save locally only.
-        ss.textContent="Couldn't reach cloud — using this device only.";
-        saveLocalOnly();
-      }
+        ss.textContent="New profile created.";saveStore();
+      }else{ss.textContent="Couldn't reach cloud \u2014 using this device only.";saveLocalOnly();}
       updateWho();setTimeout(closeLogin,800);goHome();
     });
   }else{
-    // no cloud: local-only. If switching accounts on this device, start clean.
     if(switching){store.history=[];store.mastery={};store.best={};store.streakDays=0;store.lastDay=null;store.todayCount=0;store.todayDate=null;}
     saveLocalOnly();updateWho();closeLogin();goHome();
   }
@@ -1203,7 +1445,6 @@ document.addEventListener("keydown",function(e){
   if(document.getElementById("engine").classList.contains("hidden"))return;
   if(run&&run.mcq&&!run.locked&&["1","2","3","4"].includes(e.key)){const btns=document.querySelectorAll("#mcqArea .mcqbtn");const idx=parseInt(e.key)-1;if(btns[idx])btns[idx].click();e.preventDefault();}
 });
-document.getElementById("answer").addEventListener("keydown",function(e){if(e.key==="Enter")submitTyped();});
 document.getElementById("answer").addEventListener("input",function(e){e.target.value=e.target.value.replace(/[^0-9.\-]/g,"");});
 document.getElementById("loginCode").addEventListener("input",function(e){e.target.value=e.target.value.replace(/[^0-9]/g,"");});
 document.getElementById("loginCode").addEventListener("keydown",function(e){if(e.key==="Enter")loginNext();});
@@ -1212,7 +1453,6 @@ document.getElementById("loginName").addEventListener("keydown",function(e){if(e
 /* ---- init ---- */
 function detectKeypad(){useKeypad=('ontouchstart' in window)||navigator.maxTouchPoints>0;const inp=document.getElementById("answer");inp.setAttribute("inputmode",useKeypad?"none":"decimal");}
 detectKeypad();applyTheme();applySound();updateWho();
-document.getElementById("adaptive").checked=cfg.adaptive;document.getElementById("solToggle").checked=cfg.sol;
 goHome();
 if(!store.user)setTimeout(openLogin,300);
 initCloud(function(){
@@ -1358,20 +1598,26 @@ function loadGroupBoard(groupCode,mode,cb){
 }
 
 /* ---- Friend challenges ---- */
-function makeChallengeId(){return "ch"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function make6Digit(){return String(Math.floor(100000+Math.random()*900000));}
+function makeChallengeId(cb){
+  const id=make6Digit();
+  fbDB.ref("challenges/"+id).get().then(function(snap){
+    if(snap.exists())makeChallengeId(cb); else cb(id);
+  }).catch(function(){cb(id);});
+}
 function createChallenge(type,opts,cb){
   if(!cloudReady||!store.user){cb&&cb(false,"Cloud needed for challenges.");return;}
-  const id=makeChallengeId();
-  const exp=nowTs()+(opts.hours||24)*3600*1000;
-  const rec={from:myCode(),fromName:myName(),type:type,exp:exp,created:nowTs(),results:{}};
-  if(type==="set"){
-    // build a fixed question set (numeric)
-    const n=opts.count||10;const set=[];
-    for(let i=0;i<n;i++){const key=pick(ALL_KEYS);const b=GEN[key].fn(opts.level||3);set.push({q:b.q,a:b.a,label:GEN[key].label,note:b.note,steps:b.steps,trick:b.trick});}
-    rec.questions=set;
-  }else if(type==="streak"){rec.metric="streakDays";rec.myVal=store.streakDays||0;}
-  else if(type==="accuracy"){rec.metric="accuracy";}
-  fbDB.ref("challenges/"+id).set(rec).then(function(){cb&&cb(true,id);}).catch(function(){cb&&cb(false,"Couldn't create.");});
+  makeChallengeId(function(id){
+    const exp=nowTs()+(opts.hours||24)*3600*1000;
+    const rec={from:myCode(),fromName:myName(),type:type,exp:exp,created:nowTs(),results:{}};
+    if(type==="set"){
+      const n=opts.count||10;const pool=(opts.keys&&opts.keys.length)?opts.keys:ALL_KEYS;const set=[];
+      for(let i=0;i<n;i++){const key=pick(pool);const b=GEN[key].fn(opts.level||3);set.push({q:b.q,a:b.a,label:GEN[key].label,note:b.note,steps:b.steps,trick:b.trick});}
+      rec.questions=set;
+    }else if(type==="streak"){rec.metric="streakDays";rec.myVal=store.streakDays||0;}
+    else if(type==="accuracy"){rec.metric="accuracy";}
+    fbDB.ref("challenges/"+id).set(rec).then(function(){cb&&cb(true,id);}).catch(function(){cb&&cb(false,"Couldn't create.");});
+  });
 }
 function loadChallenge(id,cb){
   if(!cloudReady){cb(null);return;}
@@ -1388,12 +1634,8 @@ function submitStreakToChallenge(id,cb){
 
 
 /* ============================================================
-   OVERLAY UI — formula cards + social screens
+   FORMULA CARDS
    ============================================================ */
-function openOverlay(id){document.getElementById(id).classList.remove("hidden");}
-function closeOverlay(id){document.getElementById(id).classList.add("hidden");}
-
-/* ---- Formula cards ---- */
 let formulaFilter="All";
 function openFormulas(){
   const chips=document.getElementById("formulaTopicChips");chips.innerHTML="";
@@ -1406,61 +1648,66 @@ function openFormulas(){
     c.innerHTML='<div class="ftop"><span class="fname">'+f.name+'</span><span class="ftopic">'+f.topic+'</span></div><div class="fform">'+f.formula+'</div>'+(f.note?'<div class="fnote">'+f.note+'</div>':'');
     list.appendChild(c);
   });
-  openOverlay("formulaScreen");
+  openPage("formulaScreen");
 }
 
-/* ---- Social ---- */
-function openSocial(){
-  if(!store.user){openLogin();return;}
-  socialTab("global");openOverlay("socialScreen");
-  renderMyGroups();
-}
-function socialTab(tab){
-  document.querySelectorAll("#socialTabs .tabbtn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===tab);});
-  ["global","daily","groups","challenge"].forEach(function(t){document.getElementById("tab-"+t).classList.toggle("hidden",t!==tab);});
+/* ============================================================
+   LEADERBOARD PAGE — tabs + pills
+   ============================================================ */
+let lbState={tab:"global",globalMode:"quiz",groupMode:"quiz"};
+function lbTab(tab){
+  lbState.tab=tab;
+  document.querySelectorAll("#lbTabs .tabbtn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===tab);});
+  ["global","daily","friends","challenge"].forEach(function(t){document.getElementById("lb-"+t).classList.toggle("hidden",t!==tab);});
   if(tab==="global")renderGlobal();
   else if(tab==="daily")renderDaily();
-  else if(tab==="groups")renderMyGroups();
+  else if(tab==="friends")renderMyGroups();
 }
 function boardRows(rows){
-  if(rows===null)return '<p class="panehint">Couldn\'t load — check your connection.</p>';
+  if(rows===null)return '<p class="panehint">Couldn\'t load \u2014 check your connection.</p>';
   if(rows.length===0)return '<p class="panehint">No entries yet. Be the first!</p>';
   const mc=myCode();
   return rows.map(function(r,i){const me=r.code===mc;const rank=i+1;
-    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank'+(rank<=3?' top':'')+'">'+(rank<=3?['🥇','🥈','🥉'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';
+    return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank">'+(rank<=3?['\ud83e\udd47','\ud83e\udd48','\ud83e\udd49'][rank-1]:rank)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';
   }).join("");
 }
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function renderGlobal(){const mode=document.getElementById("globalMode").value;const el=document.getElementById("globalBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadLeaderboard(mode,function(rows){el.innerHTML=boardRows(rows);});}
-function renderDaily(){const el=document.getElementById("dailyBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadDailyBoard(function(rows){el.innerHTML=boardRows(rows);});}
+
+function setGlobalMode(mode){lbState.globalMode=mode;document.querySelectorAll("#globalPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-mode")===mode);});renderGlobal();}
+function renderGlobal(){const el=document.getElementById("globalBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadLeaderboard(lbState.globalMode,function(rows){el.innerHTML=boardRows(rows);});}
+function renderDaily(){const el=document.getElementById("dailyBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadDailyBoard(function(rows){el.innerHTML=boardRows(rows);});}
+
+let activeGroup=null;
 function renderMyGroups(){
   const el=document.getElementById("myGroups");
-  if(!store.groups||store.groups.length===0){el.innerHTML='<p class="panehint">You haven\'t joined a group yet.</p>';document.getElementById("groupBoardControls").style.display="none";document.getElementById("groupBoard").innerHTML="";return;}
-  el.innerHTML=store.groups.map(function(g){return '<button class="chip'+(g===activeGroup?' active':'')+'" onclick="selectGroup(\''+g+'\')">'+g+'</button>';}).join(" ");
+  if(!store.groups||store.groups.length===0){el.innerHTML='<p class="panehint">You haven\'t joined a group yet.</p>';document.getElementById("groupPills").style.display="none";document.getElementById("groupBoard").innerHTML="";return;}
+  el.innerHTML=store.groups.map(function(g){return '<button type="button" class="chip'+(g===activeGroup?' active':'')+'" onclick="selectGroup(\''+g+'\')" style="margin-right:6px;margin-bottom:6px">'+g+'</button>';}).join(" ");
   if(!activeGroup)activeGroup=store.groups[0];
-  document.getElementById("groupBoardControls").style.display="flex";
+  document.getElementById("groupPills").style.display="flex";
   renderGroupBoard();
 }
-let activeGroup=null;
 function selectGroup(g){activeGroup=g;renderMyGroups();}
 function doJoinGroup(){const v=document.getElementById("groupInput").value;joinGroup(v,function(ok,info){if(ok){activeGroup=info;document.getElementById("groupInput").value="";toast("Joined group "+info);renderMyGroups();}else{toast(info||"Couldn't join.");}});}
-function renderGroupBoard(){if(!activeGroup)return;const mode=document.getElementById("groupMode").value;const el=document.getElementById("groupBoard");el.innerHTML='<p class="panehint">Loading…</p>';loadGroupBoard(activeGroup,mode,function(rows){el.innerHTML=boardRows(rows);});}
+function setGroupMode(mode){lbState.groupMode=mode;document.querySelectorAll("#groupPills .pill").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-mode")===mode);});renderGroupBoard();}
+function renderGroupBoard(){if(!activeGroup)return;const el=document.getElementById("groupBoard");el.innerHTML='<p class="panehint">Loading\u2026</p>';loadGroupBoard(activeGroup,lbState.groupMode,function(rows){el.innerHTML=boardRows(rows);});}
 
-/* ---- Challenges ---- */
+/* ============================================================
+   CHALLENGES — 6-digit codes
+   ============================================================ */
 function createChallengeUI(type){
-  const out=document.getElementById("challengeCreateOut");out.innerHTML='<p class="panehint">Creating…</p>';
-  const opts=type==="set"?{count:10,level:cfg.level||3,hours:48}:{hours:48};
+  const out=document.getElementById("challengeCreateOut");out.innerHTML='<p class="panehint">Creating\u2026</p>';
+  const opts={hours:48};
   createChallenge(type,opts,function(ok,id){
     if(!ok){out.innerHTML='<p class="panehint">'+(id||"Failed.")+'</p>';return;}
-    const label=type==="set"?"question set":type==="streak"?"streak battle":"accuracy battle";
-    out.innerHTML='<div class="fcard"><div class="fname">Your '+label+' is ready</div><div class="fnote">Share this code with friends (expires in 48h):</div><div class="fform" style="user-select:all;cursor:pointer" onclick="copyText(\''+id+'\')">'+id+'</div><div class="fnote">Tap the code to copy.</div></div>';
+    const label=type==="streak"?"streak battle":"accuracy battle";
+    out.innerHTML='<div class="fcard"><div class="fname">Your '+label+' is ready</div><div class="fnote">Share this code with friends (expires in 48h):</div><div class="codebox" onclick="copyText(\''+id+'\')">'+id+'</div><div class="fnote">Tap the code to copy.</div></div>';
     if(type==="streak"){submitStreakToChallenge(id,function(){});}
   });
 }
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){toast("Copied!");},function(){toast(t);});}else toast(t);}
 function openChallenge(){
-  const id=document.getElementById("challengeInput").value.trim();if(!id){toast("Paste a code first.");return;}
-  const out=document.getElementById("challengeOut");out.innerHTML='<p class="panehint">Loading…</p>';
+  const id=document.getElementById("challengeInput").value.trim();if(!/^\d{6}$/.test(id)){toast("Enter the 6-digit code.");return;}
+  const out=document.getElementById("challengeOut");out.innerHTML='<p class="panehint">Loading\u2026</p>';
   loadChallenge(id,function(ch){
     if(!ch){out.innerHTML='<p class="panehint">Challenge not found.</p>';return;}
     if(ch.exp&&nowTs()>ch.exp){out.innerHTML='<p class="panehint">This challenge has expired.</p>';return;}
@@ -1470,27 +1717,27 @@ function openChallenge(){
 function renderChallenge(ch){
   const out=document.getElementById("challengeOut");
   const results=ch.results||{};
-  const rows=Object.keys(results).map(function(k){return {code:k.replace(/^c/,''),name:results[k].name,val:ch.type==="set"?results[k].score:results[k].score};});
+  const rows=Object.keys(results).map(function(k){return {code:k.replace(/^c/,''),name:results[k].name,val:results[k].score};});
   rows.sort(function(a,b){return b.val-a.val;});
   let html='<div class="fcard"><div class="fname">'+escapeHtml(ch.fromName||"A friend")+"'s "+(ch.type==="set"?"question set":ch.type+" battle")+'</div>';
   if(ch.type==="set"){
     const played=results["c"+myCode()];
     if(played)html+='<div class="fnote">You scored '+played.score+'/'+played.total+'.</div>';
-    else html+='<div style="margin-top:8px"><button class="minibtn" onclick="playChallenge(\''+ch.id+'\')">Play this set ('+(ch.questions?ch.questions.length:0)+' Q)</button></div>';
+    else html+='<div style="margin-top:10px"><button class="minibtn" onclick="playChallenge(\''+ch.id+'\')">Play this set ('+(ch.questions?ch.questions.length:0)+' Q)</button></div>';
   }else if(ch.type==="streak"){
     html+='<div class="fnote">Whoever has the highest day-streak wins.</div>';
-    if(!results["c"+myCode()])html+='<div style="margin-top:8px"><button class="minibtn" onclick="joinStreakBattle(\''+ch.id+'\')">Submit my streak ('+(store.streakDays||0)+')</button></div>';
+    if(!results["c"+myCode()])html+='<div style="margin-top:10px"><button class="minibtn" onclick="joinStreakBattle(\''+ch.id+'\')">Submit my streak ('+(store.streakDays||0)+')</button></div>';
   }else{
-    html+='<div class="fnote">Highest quiz accuracy wins — play a quiz, then it auto-submits.</div>';
+    html+='<div class="fnote">Highest quiz accuracy wins \u2014 play a quiz, then it auto-submits.</div>';
   }
   html+='</div>';
-  if(rows.length){html+='<div class="board">'+rows.map(function(r,i){const me=r.code===myCode();return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank'+(i<3?' top':'')+'">'+(i+1)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';}).join("")+'</div>';}
+  if(rows.length){html+='<div class="board">'+rows.map(function(r,i){const me=r.code===myCode();return '<div class="lbrow'+(me?' me':'')+'"><span class="lbrank">'+(i+1)+'</span><span class="lbname">'+escapeHtml(r.name)+(me?' (you)':'')+'</span><span class="lbval">'+r.val+'</span></div>';}).join("")+'</div>';}
   out.innerHTML=html;
 }
 function playChallenge(id){
   loadChallenge(id,function(ch){
     if(!ch||!ch.questions){toast("Couldn't load set.");return;}
-    closeOverlay("socialScreen");
+    closePage("leaderboard");
     startChallengeSet({id:ch.id,questions:ch.questions,type:"set",fromName:ch.fromName});
   });
 }
