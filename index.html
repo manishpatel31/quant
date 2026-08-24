@@ -872,7 +872,7 @@ function initCloud(cb){
   });
 }
 function userKey(){if(!store.user)return null;return ("c"+store.user.code).toLowerCase().replace(/[^a-z0-9_]/g,"");}
-function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null};fbDB.ref("users/"+k).set(payload).catch(()=>{});}
+function pushCloud(){if(!cloudReady||!store.user)return;const k=userKey();if(!k)return;const payload={history:store.history,mastery:store.mastery,streakDays:store.streakDays,lastDay:store.lastDay,todayCount:store.todayCount,todayDate:store.todayDate,best:store.best,name:store.user.name,updatedAt:store.updatedAt||nowTs(),sr:store.sr||{},groups:store.groups||[],dailyDone:store.dailyDone||null};try{fbDB.ref("users/"+k).set(payload).catch(()=>{});}catch(e){}}
 function applyCloudData(d){store.history=d.history||[];store.mastery=d.mastery||{};store.streakDays=d.streakDays||0;store.lastDay=d.lastDay||null;store.todayCount=d.todayCount||0;store.todayDate=d.todayDate||null;store.best=d.best||{};store.updatedAt=d.updatedAt||0;store.sr=d.sr||{};store.groups=d.groups||[];store.dailyDone=d.dailyDone||null;}
 function pullCloud(cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
@@ -1287,19 +1287,26 @@ function kpDel(){const inp=document.getElementById("answer");if(inp.disabled)ret
 
 function endSession(){
   clearTimer();clearQt();
-  const tot=run.correct+run.wrong;const avgT=run.attempts.length?run.attempts.reduce((s,a)=>s+a.secs,0)/run.attempts.length:0;
-  const acc=Math.round(run.correct/Math.max(1,tot)*100);
-  const score=run.neg?Math.round(run.score*10)/10:(run.mode==="speed"?run.correct:acc);
-  store.history.unshift({mode:run.mode,total:Math.max(1,tot),correct:run.correct,wrong:run.wrong,score:score,neg:run.neg,avgT:Math.round(avgT*10)/10,when:nowTs(),attempts:run.attempts.slice(0,60)});
-  store.history=store.history.slice(0,40);
-  const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:acc);
-  let isBest=false;if(!store.best)store.best={};if(store.best[bkey]==null||bval>store.best[bkey]){if(store.history.length>1||store.best[bkey]!=null)isBest=(store.best[bkey]!=null);store.best[bkey]=bval;}
-  run._isBest=isBest;run._avgT=avgT;run._acc=acc;
-  if(run.mode==="daily"){store.dailyDone=dateSeed();store.dailyScore=run.correct;if(cloudReady)submitDaily(run.correct);}
-  if(cloudReady&&(run.mode==="quiz"||run.mode==="speed"||run.mode==="mock")){submitLeaderboard(run.mode,bval);}
-  if(run.mode==="challenge"&&run.challengeMeta){run._challengeResult={score:run.correct,total:tot};if(cloudReady)submitChallengeResult(run.challengeMeta,run.correct,tot);}
-  lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick,isText:a.isText,mcqOptions:a.mcqOptions}));
-  recordActivity(tot);saveStore();renderResults();
+  try{
+    const tot=run.correct+run.wrong;const avgT=run.attempts.length?run.attempts.reduce((s,a)=>s+a.secs,0)/run.attempts.length:0;
+    const acc=Math.round(run.correct/Math.max(1,tot)*100);
+    const score=run.neg?Math.round(run.score*10)/10:(run.mode==="speed"?run.correct:acc);
+    store.history.unshift({mode:run.mode,total:Math.max(1,tot),correct:run.correct,wrong:run.wrong,score:score,neg:run.neg,avgT:Math.round(avgT*10)/10,when:nowTs(),attempts:run.attempts.slice(0,60)});
+    store.history=store.history.slice(0,40);
+    const bkey=run.mode+(run.neg?"_neg":"");const bval=run.mode==="speed"?run.correct:(run.neg?score:acc);
+    let isBest=false;if(!store.best)store.best={};if(store.best[bkey]==null||bval>store.best[bkey]){if(store.history.length>1||store.best[bkey]!=null)isBest=(store.best[bkey]!=null);store.best[bkey]=bval;}
+    run._isBest=isBest;run._avgT=avgT;run._acc=acc;
+    if(run.mode==="daily"){store.dailyDone=dateSeed();store.dailyScore=run.correct;if(cloudReady){try{submitDaily(run.correct);}catch(e){}}}
+    if(cloudReady&&(run.mode==="quiz"||run.mode==="speed"||run.mode==="mock")){try{submitLeaderboard(run.mode,bval);}catch(e){}}
+    if(run.mode==="challenge"&&run.challengeMeta){run._challengeResult={score:run.correct,total:tot};if(cloudReady){try{submitChallengeResult(run.challengeMeta,run.correct,tot);}catch(e){}}}
+    lastWrong=run.attempts.filter(a=>!a.ok).map(a=>({q:a.q,a:a.a,label:a.label,key:a.key,note:a.note,steps:a.steps,trick:a.trick,isText:a.isText,mcqOptions:a.mcqOptions}));
+    recordActivity(tot);
+  }catch(e){
+    // never let an unexpected error (cloud, storage, anything) trap the user on a frozen screen
+    run._isBest=run._isBest||false;run._avgT=run._avgT||0;run._acc=run._acc||0;
+  }
+  try{saveStore();}catch(e){}
+  try{renderResults();}catch(e){goHome();}
 }
 
 /* ============================================================ RESULTS ============ */
@@ -1549,16 +1556,18 @@ function myName(){return store.user?store.user.name:"Anon";}
 /* ---- Leaderboard ---- */
 function submitLeaderboard(mode,val){
   if(!cloudReady||!store.user)return;
-  const code=myCode();
-  const ref=fbDB.ref("leaderboard/"+mode+"/c"+code);
-  ref.get().then(function(snap){
-    const prev=snap.exists()?snap.val():null;
-    if(!prev||val>prev.val){ref.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}
-  }).catch(()=>{});
+  try{
+    const code=myCode();
+    const ref=fbDB.ref("leaderboard/"+mode+"/c"+code);
+    ref.get().then(function(snap){
+      const prev=snap.exists()?snap.val():null;
+      if(!prev||val>prev.val){try{ref.set({name:myName(),val:val,ts:nowTs()}).catch(()=>{});}catch(e){}}
+    }).catch(()=>{});
+  }catch(e){}
 }
 function submitDaily(score){
   if(!cloudReady||!store.user)return;
-  fbDB.ref("daily/d"+dateSeed()+"/c"+myCode()).set({name:myName(),score:score,ts:nowTs()}).catch(()=>{});
+  try{fbDB.ref("daily/d"+dateSeed()+"/c"+myCode()).set({name:myName(),score:score,ts:nowTs()}).catch(()=>{});}catch(e){}
 }
 function loadLeaderboard(mode,cb){
   if(!cloudReady){cb(null);return;}
@@ -1625,11 +1634,11 @@ function loadChallenge(id,cb){
 }
 function submitChallengeResult(meta,score,total){
   if(!cloudReady||!store.user||!meta.id)return;
-  fbDB.ref("challenges/"+meta.id+"/results/c"+myCode()).set({name:myName(),score:score,total:total,ts:nowTs()}).catch(()=>{});
+  try{fbDB.ref("challenges/"+meta.id+"/results/c"+myCode()).set({name:myName(),score:score,total:total,ts:nowTs()}).catch(()=>{});}catch(e){}
 }
 function submitStreakToChallenge(id,cb){
   if(!cloudReady||!store.user){cb&&cb(false);return;}
-  fbDB.ref("challenges/"+id+"/results/c"+myCode()).set({name:myName(),score:store.streakDays||0,total:0,ts:nowTs()}).then(function(){cb&&cb(true);}).catch(function(){cb&&cb(false);});
+  try{fbDB.ref("challenges/"+id+"/results/c"+myCode()).set({name:myName(),score:store.streakDays||0,total:0,ts:nowTs()}).then(function(){cb&&cb(true);}).catch(function(){cb&&cb(false);});}catch(e){cb&&cb(false);}
 }
 
 
